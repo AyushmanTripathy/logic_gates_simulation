@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      width: 100vw;
+      background-color: black;
+      padding: 0;
+      margin: 0;
+    }
+    main {
+      position: absolute;
+      background-color: grey;
+      height: 90vh;
+      width: 90vw;
+      color: white;
+    }
+    .box {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: absolute;
+      text-align: center;
+      background: red;
+    }
+  </style>
+</head>
+<body>
+  <main></main>
+  <script type="module">
+    import init from "./game.js";
+    const ele = document.querySelector("main");
+    init(ele);
+  </script>
+</body>
+</html>
