@@ -17,6 +17,67 @@ function boundToRange(x, min, max) {
   return x;
 }
 
+class Dot {
+  static selectedDot = false;
+  /**
+   * @param {boolean} alignLeft 
+   * @param {Box} parentBox 
+   * */
+  constructor(isInput, parentBox) {
+    this.isInput = isInput;
+    this.parentBox = parentBox;
+    this.ele = document.createElement("div");
+    this.ele.classList.add("dot");
+  }
+
+  /**
+   * @param {Dot} d 
+   * */
+  connect(d) {
+    /**
+     * @type {CanvasRenderingContext2D}
+     * */
+    const ctx = globalThis.canvasCtx;
+    ctx.strokeStyle = "#fff";
+    ctx.beginPath();
+    ctx.moveTo(10, 20);
+    ctx.lineTo(100, 200);
+    ctx.stroke();
+  }
+
+  render(parentElement) {
+    parentElement.appendChild(this.ele);
+    this.ele.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (Dot.selectedDot) {
+        this.connect(Dot.selectedDot);
+        Dot.selectedDot = false;
+        return;
+      } 
+      Dot.selectedDot = this;
+    })
+  }
+}
+
+class DotContainer {
+  /**
+   * @param {Box} parentBox 
+   * @param {boolean} alignLeft 
+   * */
+  constructor(isInput, parentBox) {
+    this.isInput = isInput;
+    this.parentBox = parentBox;
+    this.ele = document.createElement("div");
+    this.ele.classList.add("dotContainer");
+    parentBox.ele.appendChild(this.ele);
+  }
+
+  addDot() {
+    const d = new Dot(this.isInput, this.parentBox);
+    d.render(this.ele);
+    return d;
+  }
+}
 export default class Box {
   /**
    * @param {number} x
@@ -27,15 +88,23 @@ export default class Box {
    * */
   constructor(x, y, w, h, name) {
     this.ele = document.createElement("div");
+    this.ele.classList.add("box");
 
-    this.setName(name);
+    this.inputContainer = new DotContainer(true, this);
+    this.nameEle = document.createElement("h1");
+    this.ele.appendChild(this.nameEle);
+    this.outputContainer = new DotContainer(false, this);
+
+    this.inputContainer.addDot();
+    this.inputContainer.addDot();
+    this.outputContainer.addDot();
+
     this.setHeight(h);
     this.setWidth(w);
 
     this.setX(x);
     this.setY(y);
-
-    this.ele.classList.add("box");
+    this.setName(name);
   }
 
   setX(x) {
@@ -51,7 +120,7 @@ export default class Box {
 
   setName(name) {
     this.name = name;
-    this.ele.innerText = name;
+    this.nameEle.innerText = name;
   }
   setHeight(h) {
     if (typeof h != "number") throw TypeError();
@@ -72,9 +141,6 @@ export default class Box {
     parentElement.appendChild(this.ele);
   }
 
-  /**
-   * @param {DragEvent} e
-   */
   handleDragStart(box) {
     return (e) => {
       e.target.style.opacity = 0.4;
@@ -83,9 +149,6 @@ export default class Box {
     };
   }
 
-  /**
-   * @param {DragEvent} e
-   * */
   handleDragEnd(box) {
     return (e) => {
       e.target.style.opacity = 1;
