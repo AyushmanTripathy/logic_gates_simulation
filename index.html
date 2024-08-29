@@ -21,8 +21,8 @@
       margin: 0;
     }
     .section {
-      height: 90vh;
-      width: 90vw;
+      height: 720px;
+      width: 1080px;
     }
     #gameCanvas {
       background: black;
@@ -59,7 +59,7 @@
 </head>
 <body>
   <main class="container">
-    <canvas id="gameCanvas" class="section"></canvas>
+    <canvas height="720" width="1080" id="gameCanvas" class="section"></canvas>
   </main>
   <main class="container">
     <section class="section" id="gameMain"></section>
@@ -68,8 +68,7 @@
     import init from "./game.js";
     const ele = document.getElementById("gameMain");
     const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
-    init(ele, ctx);
+    init(ele, canvas);
   </script>
 </body>
 </html>

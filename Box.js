@@ -1,7 +1,9 @@
-export class Point {
-  constructor(x, y) {
-    this.x = x;
-    this.y = y;
+export class ColorGenrator {
+  static colors = ["aqua", "lime", "purple", "fuchsia", "teal"];
+  static colorIndex = 0;
+  static getColor() {
+    ColorGenrator.colorIndex = (ColorGenrator.colorIndex + 1) % ColorGenrator.colors.length;
+    return ColorGenrator.colors[ColorGenrator.colorIndex];
   }
 }
 
@@ -17,52 +19,114 @@ function boundToRange(x, min, max) {
   return x;
 }
 
+export class Connector {
+  static hasInstance = false;
+  static instance;
+
+  /**
+   * @param {HTMLElement} boxContainerEle
+   * @param {HTMLCanvasElement} canvasEle
+   * */
+  constructor(boxContainerEle, canvasEle) {
+    if (this.hasInstance) throw "Connector instance present";
+    Connector.hasInstance = true;
+    this.ctx = canvasEle.getContext("2d");
+    this.boxContainerRect = boxContainerEle.getBoundingClientRect();
+    this.connections = [];
+    Connector.instance = this;
+  }
+
+  /**
+   * @param {HTMLElement} d1
+   * @param {HTMLElement} d2
+   * */
+  static addConnection(d1, d2, color) {
+    if (!this.hasInstance) throw "no Connector instance";
+    this.instance.connections.push([d1, d2, color]);
+    this.instance.drawConnections();
+  }
+  static reDraw() {
+    if (!this.hasInstance) throw "no Connector instance";
+    this.instance.drawConnections();
+  }
+  /**
+   * @param {HTMLElement} ele 
+   * */
+  getPos(ele) {
+    const rect = ele.getBoundingClientRect();
+    return {
+      x: rect.left - this.boxContainerRect.left + (rect.width / 2),
+      y: rect.top - this.boxContainerRect.top + (rect.height / 2)
+    }
+  }
+  drawConnections() {
+    this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+    for (const conn of this.connections) {
+      this.drawConnectionLine(this.getPos(conn[0]), this.getPos(conn[1]), conn[2]);
+    }
+  }
+  drawConnectionLine(p, q, color) {
+    this.ctx.strokeStyle = color;
+    this.ctx.lineWidth = 5;
+    this.ctx.beginPath();
+    this.ctx.moveTo(p.x, p.y);
+    this.ctx.lineTo(q.x, q.y);
+    this.ctx.stroke();
+  }
+}
+
 class Dot {
   static selectedDot = false;
   /**
-   * @param {boolean} alignLeft 
-   * @param {Box} parentBox 
+   * @param {boolean} alignLeft
+   * @param {Box} parentBox
    * */
   constructor(isInput, parentBox) {
     this.isInput = isInput;
     this.parentBox = parentBox;
     this.ele = document.createElement("div");
     this.ele.classList.add("dot");
+    this.connectTo = null;
+    this.connectionColor = null;
   }
 
   /**
-   * @param {Dot} d 
+   * @param {Dot} d
    * */
   connect(d) {
     /**
      * @type {CanvasRenderingContext2D}
      * */
-    const ctx = globalThis.canvasCtx;
-    ctx.strokeStyle = "#fff";
-    ctx.beginPath();
-    ctx.moveTo(10, 20);
-    ctx.lineTo(100, 200);
-    ctx.stroke();
+    this.connectionColor = d.connectionColor;
+    this.connectTo = d;
+    this.ele.style.backgroundColor = this.connectionColor;
   }
 
   render(parentElement) {
     parentElement.appendChild(this.ele);
     this.ele.addEventListener("click", (e) => {
       e.preventDefault();
+
+      // connecting both
       if (Dot.selectedDot) {
         this.connect(Dot.selectedDot);
+        Connector.addConnection(Dot.selectedDot.ele, this.ele, this.connectionColor);
         Dot.selectedDot = false;
         return;
-      } 
+      }
+
+      this.connectionColor = ColorGenrator.getColor();
+      this.ele.style.backgroundColor = this.connectionColor;
+
       Dot.selectedDot = this;
-    })
+    });
   }
 }
 
 class DotContainer {
   /**
-   * @param {Box} parentBox 
-   * @param {boolean} alignLeft 
+   * @param {Box} parentBox
+   * @param {boolean} alignLeft
    * */
   constructor(isInput, parentBox) {
     this.isInput = isInput;
@@ -78,7 +142,7 @@ class DotContainer {
     return d;
   }
 }
-export default class Box {
+export class Box {
   /**
    * @param {number} x
    * @param {number} y
@@ -156,6 +220,7 @@ export default class Box {
       box.setY(box.y + e.screenY - box.dragStartScreenY);
       box.dragStartScreenX = null;
       box.dragStartScreenY = null;
+      Connector.reDraw();
     };
   }
 }

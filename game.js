@@ -1,15 +1,16 @@
-import Box from "./Box.js";
+import { Box, Connector } from "./Box.js";
 
 /**
  * Init function
  * @param {HTMLElement} mainEle
- * @param {CanvasRenderingContext2D} canvasContext 
+ * @param {HTMLCanvasElement} canvasEle
  * @returns {void}
  */
-export default function init(mainEle, canvasContext) {
+export default function init(mainEle, canvasEle) {
+  new Connector(mainEle, canvasEle);
   globalThis.gridHeight = mainEle.clientHeight;
   globalThis.gridWidth = mainEle.clientWidth;
-  globalThis.canvasCtx = canvasContext;
+
   let counter = 0;
   mainEle.addEventListener("contextmenu", (e) => {
     // ignore bubbled events
