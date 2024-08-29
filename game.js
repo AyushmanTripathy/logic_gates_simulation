@@ -17,6 +17,9 @@ export default function init(mainEle, canvasEle) {
     if (e.target != mainEle) return;
     e.preventDefault();
     const b = new Box(e.offsetX,e.offsetY,100, 100, counter++);
+    console.log(b)
     b.render(mainEle);
+
+    b.ele.addEventListener("click", () => console.log(b))
   })
 }

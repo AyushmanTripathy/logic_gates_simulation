@@ -19,6 +19,14 @@ function boundToRange(x, min, max) {
   return x;
 }
 
+function randomHash() {
+  let s = "";
+  for (let i = 0; i < 10; i++) {
+    s += String.fromCharCode(33 + Math.floor(Math.random() * 90));
+  }
+  return s;
+}
+
 export class Connector {
   static hasInstance = false;
   static instance;
@@ -32,22 +40,30 @@ export class Connector {
     Connector.hasInstance = true;
     this.ctx = canvasEle.getContext("2d");
     this.boxContainerRect = boxContainerEle.getBoundingClientRect();
-    this.connections = [];
+    this.connections = {};
     Connector.instance = this;
   }
 
   /**
-   * @param {HTMLElement} d1
-   * @param {HTMLElement} d2
+   * @param {Connection} conn 
    * */
-  static addConnection(d1, d2, color) {
+  static addConnection(conn) {
     if (!this.hasInstance) throw "no Connector instance";
-    this.instance.connections.push([d1, d2, color]);
+    
+    conn.dots[0].connect(conn.dots[1], conn);
+    conn.dots[1].connect(conn.dots[0], conn);
+
+    this.instance.connections[conn.hash] = conn;
     this.instance.drawConnections();
   }
   static reDraw() {
     if (!this.hasInstance) throw "no Connector instance";
     this.instance.drawConnections();
+  }
+  static removeConnection(connHash) {
+    if (!this.hasInstance) throw "no Connector instance";
+    delete this.instance.connections[connHash];
+    Connector.reDraw();
   }
   /**
    * @param {HTMLElement} ele 
@@ -61,8 +77,11 @@ export class Connector {
   }
   drawConnections() {
     this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
-    for (const conn of this.connections) {
-      this.drawConnectionLine(this.getPos(conn[0]), this.getPos(conn[1]), conn[2]);
+    for (const connHash in this.connections) {
+      const conn = this.connections[connHash];
+      const p = this.getPos(conn.dots[0].ele);
+      const q = this.getPos(conn.dots[1].ele);
+      this.drawConnectionLine(p, q, conn.color);
     }
   }
   drawConnectionLine(p, q, color) {
@@ -72,6 +91,25 @@ export class Connector {
     this.ctx.moveTo(p.x, p.y);
     this.ctx.lineTo(q.x, q.y);
     this.ctx.stroke();
+  }
+}
+
+class Connection {
+  /**
+   * @param {Dot} d1 
+   * @param {Dot} d2 
+   * @param {String} color 
+   * */
+  constructor(d1, d2, color) {
+    this.hash = randomHash();
+    this.dots = [d1, d2];
+    this.color = color;
+  }
+
+  destroy() {
+    this.dots[0].removeConnection(this.hash);
+    this.dots[1].removeConnection(this.hash);
+    Connector.removeConnection(this.hash);
   }
 }
 
@@ -86,36 +124,53 @@ class Dot {
     this.parentBox = parentBox;
     this.ele = document.createElement("div");
     this.ele.classList.add("dot");
-    this.connectTo = null;
+    this.connections = {};
     this.connectionColor = null;
   }
 
   /**
    * @param {Dot} d
+   * @param {Connection} conn 
+   * called by Connector.addConnection
    * */
-  connect(d) {
-    /**
-     * @type {CanvasRenderingContext2D}
-     * */
+  connect(d, conn) {
     this.connectionColor = d.connectionColor;
-    this.connectTo = d;
+    this.connections[conn.hash] = conn;
     this.ele.style.backgroundColor = this.connectionColor;
+  }
+  
+  removeConnection(connHash) {
+    delete this.connections[connHash];
+    if (Object.keys(this.connections).length == 0) 
+      this.ele.style.backgroundColor = "";
+  }
+
+  removeAllConnections() {
+    const connHashes = Object.keys(this.connections);
+    for (const connHash of connHashes)
+      this.connections[connHash].destroy();
+    this.ele.style.backgroundColor = "";
   }
 
   render(parentElement) {
     parentElement.appendChild(this.ele);
+    this.ele.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      this.removeAllConnections();
+    })
     this.ele.addEventListener("click", (e) => {
       e.preventDefault();
 
       // connecting both
       if (Dot.selectedDot) {
-        this.connect(Dot.selectedDot);
-        Connector.addConnection(Dot.selectedDot.ele, this.ele, this.connectionColor);
+        const conn = new Connection(this, Dot.selectedDot, Dot.selectedDot.connectionColor);
+        Connector.addConnection(conn);
         Dot.selectedDot = false;
         return;
       }
 
-      this.connectionColor = ColorGenrator.getColor();
+      if (!this.connectionColor)
+        this.connectionColor = ColorGenrator.getColor();
       this.ele.style.backgroundColor = this.connectionColor;
 
       Dot.selectedDot = this;
@@ -136,6 +191,9 @@ class DotContainer {
     parentBox.ele.appendChild(this.ele);
   }
 
+  /**
+   * @returns {Dot} Dot just added
+   * */
   addDot() {
     const d = new Dot(this.isInput, this.parentBox);
     d.render(this.ele);
@@ -159,9 +217,9 @@ export class Box {
     this.ele.appendChild(this.nameEle);
     this.outputContainer = new DotContainer(false, this);
 
-    this.inputContainer.addDot();
-    this.inputContainer.addDot();
-    this.outputContainer.addDot();
+    this.dots = [];
+    this.dots.push(this.inputContainer.addDot());
+    this.dots.push(this.outputContainer.addDot());
 
     this.setHeight(h);
     this.setWidth(w);
