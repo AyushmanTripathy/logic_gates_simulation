@@ -1,11 +1,11 @@
 export const logicFuncs = {
   AND: (ins) => {
     for (const x of ins) {
-      if (!x) return [false];
+      if (!x) return false;
     }
-    return [true];
+    return true;
   },
-  BUFFER: (ins) => [...ins],
+  BUFFER: (ins) => ins[0],
   NOT: (ins) => !ins[0],
 };
 
@@ -28,25 +28,38 @@ export class Gate {
   }
 
   /**
-   * @param {number} index
-   * fetches the value from the gate
    * @returns {boolean[]}
    * */
-  fetchOutput(index) {
-    if (0 > index || index >= this.outCount)
-      throw "Cannot fetchOutput for " + index;
-    const func = this.outLogicFuncs[index];
+  fetchAllInputs() {
     const ins = [];
     for (let i = 0; i < this.inCount; i++) {
       if (this.inputs[i])
         ins.push(this.inputs[i].fetchOutput(this.inputsIndex[i]));
-      else ins.push(0);
+      else ins.push(false);
     }
-    const outs = this.outLogicFuncs[index](ins);
+    return ins;
+  }
+  /**
+   * @param {number} index
+   * fetches the value from the gate
+   * @returns {boolean}
+   * */
+  fetchOutput(index) {
+    if (0 > index || index >= this.outCount)
+      throw "Cannot fetchOutput for " + index;
+    const output = this.outLogicFuncs[index](this.fetchAllInputs());
     // have to implement caching here
-    return outs;
+    return output;
   }
 
+  /**
+   * @returns {boolean[]}
+   * */
+  fetchAllOutput() {
+    const outs = [];
+    for (let i = 0; i < this.outCount; i++) outs.push(this.fetchOutput(i));
+    return outs;
+  }
   /**
    * @param {Gate} inputGate
    * @param {number} asIndex
@@ -60,5 +73,12 @@ export class Gate {
     this.inputs[asIndex] = inputGate;
     this.inputsIndex[asIndex] = gateIndex;
     return true;
+  }
+
+  removeInput(index) {
+    if (index < 0 || index >= this.inCount)
+      throw "cannot removeInput for " + index;
+    this.inputsIndex[index] = null;
+    this.inputs[index] = null;
   }
 }

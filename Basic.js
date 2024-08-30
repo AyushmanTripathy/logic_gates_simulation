@@ -1,4 +1,4 @@
-import { Gate, logicFuncs } from "./Gates.js";
+import { Gate } from "./Gates.js";
 
 export class ColorGenrator {
   static colors = ["aqua", "lime", "purple", "fuchsia", "teal"];
@@ -156,6 +156,9 @@ class Dot {
 
   removeConnection(connHash) {
     delete this.connections[connHash];
+    if (this.isInput) {
+      this.parentBox.gate.removeInput(this.index);
+    }
     this.ele.style.backgroundColor = this.connectionColor;
   }
 

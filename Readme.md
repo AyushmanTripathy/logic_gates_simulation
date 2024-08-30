@@ -1,4 +1,4 @@
-
+# Logic Gates Simulation
 
 every Box will have a gate associated with it
 
@@ -9,3 +9,9 @@ every Box will have a gate associated with it
 1. Fix the infinite loop issue
     - cache the value for some time, before recomputing.
     - call the output gates in time interval
+
+### TODO
+
+[x] Gates structure
+[ ] IO system
+[ ] Makes it work
