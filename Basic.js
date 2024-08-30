@@ -55,7 +55,8 @@ export class Connector {
     if (conn.dots[0].isInput == conn.dots[1].isInput) return;
 
     // if is output dot and already connected with other
-    const checkOutputCondition = (d) => d.isInput && Object.keys(d.connections).length;  
+    const checkOutputCondition = (d) =>
+      d.isInput && Object.keys(d.connections).length;
     if (checkOutputCondition(conn.dots[0])) return;
     if (checkOutputCondition(conn.dots[1])) return;
 
@@ -110,6 +111,7 @@ class Connection {
    * @param {String} color
    * */
   constructor(d1, d2) {
+    if (d1.hashId == d2.hashId) throw "Cannot create same dots";
     this.hash = randomHash();
     this.dots = [d1, d2];
     this.color = d1.isInput ? d2.connectionColor : d1.connectionColor;
@@ -139,6 +141,7 @@ class Dot {
     this.index = index;
 
     this.ele.style.backgroundColor = this.connectionColor;
+    this.hashId = randomHash();
   }
 
   /**
@@ -178,7 +181,7 @@ class Dot {
       e.preventDefault();
 
       // connecting both
-      if (Dot.selectedDot) {
+      if (Dot.selectedDot && Dot.selectedDot.hashId != this.hashId) {
         const conn = new Connection(this, Dot.selectedDot);
         Connector.addConnection(conn);
         Dot.selectedDot = false;

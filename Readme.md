@@ -13,5 +13,7 @@ every Box will have a gate associated with it
 ### TODO
 
 [x] Gates structure
+[x] Makes it work
+
 [ ] IO system
-[ ] Makes it work
+[ ] Fix loops

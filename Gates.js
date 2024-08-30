@@ -9,6 +9,8 @@ export const logicFuncs = {
   NOT: (ins) => !ins[0],
 };
 
+const cacheInvalidTime = 500;
+
 export class Gate {
   /**
    * @param {String} name
@@ -25,6 +27,7 @@ export class Gate {
     this.inputsIndex = new Array(inCount).fill(null);
     this.outCount = outLogicFuncs.length;
     this.outLogicFuncs = outLogicFuncs;
+    this.outputCaches = new Array(this.outCount).fill(null);
   }
 
   /**
@@ -47,9 +50,11 @@ export class Gate {
   fetchOutput(index) {
     if (0 > index || index >= this.outCount)
       throw "Cannot fetchOutput for " + index;
-    const output = this.outLogicFuncs[index](this.fetchAllInputs());
-    // have to implement caching here
-    return output;
+    if (this.outputCaches[index] === null) {
+      this.outputCaches[index] = this.outLogicFuncs[index](this.fetchAllInputs());
+      setTimeout(() => this.outputCaches[index] = null, cacheInvalidTime);
+    }
+    return this.outputCaches[index];
   }
 
   /**
