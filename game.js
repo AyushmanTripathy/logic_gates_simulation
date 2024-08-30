@@ -12,9 +12,13 @@ export default function init(mainEle, canvasEle) {
   globalThis.gridHeight = mainEle.clientHeight;
   globalThis.gridWidth = mainEle.clientWidth;
 
+  const mainEleRect = mainEle.getBoundingClientRect();
   const inputBufferGate = new Gate("INPUT BUFFER", 0, new Array(3).fill(logicFuncs.BUFFER));  
-  const inputBox = new Box(0, 0, 50, 200, inputBufferGate);
+  const inputBox = new Box(0, mainEleRect.height / 2 - 100, 50, 200, inputBufferGate);
+  const outputBufferGate = new Gate("OUTPUT BUFFER", 3, []);
+  const outputBox = new Box(mainEleRect.width, mainEleRect.height / 2 - 100, 50, 200, outputBufferGate);
   inputBox.render(mainEle);
+  outputBox.render(mainEle);
 
   mainEle.addEventListener("contextmenu", (e) => {
     // ignore bubbled events

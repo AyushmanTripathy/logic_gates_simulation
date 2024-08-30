@@ -52,6 +52,12 @@ export class Connector {
    * */
   static addConnection(conn) {
     if (!this.hasInstance) throw "no Connector instance";
+    if (conn.dots[0].isInput == conn.dots[1].isInput) return;
+
+    // if is output dot and already connected with other
+    const checkOutputCondition = (d) => d.isInput && Object.keys(d.connections).length;  
+    if (checkOutputCondition(conn.dots[0])) return;
+    if (checkOutputCondition(conn.dots[1])) return;
 
     conn.dots[0].connect(conn.dots[1], conn);
     conn.dots[1].connect(conn.dots[0], conn);
@@ -106,7 +112,7 @@ class Connection {
   constructor(d1, d2) {
     this.hash = randomHash();
     this.dots = [d1, d2];
-    this.color = d1.isInput ? d2.connectionColor: d1.connectionColor;
+    this.color = d1.isInput ? d2.connectionColor : d1.connectionColor;
   }
 
   destroy() {
@@ -129,7 +135,7 @@ class Dot {
     this.ele = document.createElement("div");
     this.ele.classList.add("dot");
     this.connections = {};
-    this.connectionColor = isInput ? "white" : ColorGenrator.getColor();
+    this.connectionColor = isInput ? "black" : ColorGenrator.getColor();
     this.index = index;
 
     this.ele.style.backgroundColor = this.connectionColor;
@@ -170,13 +176,8 @@ class Dot {
 
       // connecting both
       if (Dot.selectedDot) {
-        if (Dot.selectedDot.isInput != this.isInput) {
-          const conn = new Connection(
-            this,
-            Dot.selectedDot
-          );
-          Connector.addConnection(conn);
-        }
+        const conn = new Connection(this, Dot.selectedDot);
+        Connector.addConnection(conn);
         Dot.selectedDot = false;
         return;
       }
