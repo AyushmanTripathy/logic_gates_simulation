@@ -1,8 +1,11 @@
+import { Gate, logicFuncs } from "./Gates.js";
+
 export class ColorGenrator {
   static colors = ["aqua", "lime", "purple", "fuchsia", "teal"];
   static colorIndex = 0;
   static getColor() {
-    ColorGenrator.colorIndex = (ColorGenrator.colorIndex + 1) % ColorGenrator.colors.length;
+    ColorGenrator.colorIndex =
+      (ColorGenrator.colorIndex + 1) % ColorGenrator.colors.length;
     return ColorGenrator.colors[ColorGenrator.colorIndex];
   }
 }
@@ -45,11 +48,11 @@ export class Connector {
   }
 
   /**
-   * @param {Connection} conn 
+   * @param {Connection} conn
    * */
   static addConnection(conn) {
     if (!this.hasInstance) throw "no Connector instance";
-    
+
     conn.dots[0].connect(conn.dots[1], conn);
     conn.dots[1].connect(conn.dots[0], conn);
 
@@ -66,14 +69,14 @@ export class Connector {
     Connector.reDraw();
   }
   /**
-   * @param {HTMLElement} ele 
+   * @param {HTMLElement} ele
    * */
   getPos(ele) {
     const rect = ele.getBoundingClientRect();
     return {
-      x: rect.left - this.boxContainerRect.left + (rect.width / 2),
-      y: rect.top - this.boxContainerRect.top + (rect.height / 2)
-    }
+      x: rect.left - this.boxContainerRect.left + rect.width / 2,
+      y: rect.top - this.boxContainerRect.top + rect.height / 2,
+    };
   }
   drawConnections() {
     this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
@@ -96,14 +99,14 @@ export class Connector {
 
 class Connection {
   /**
-   * @param {Dot} d1 
-   * @param {Dot} d2 
-   * @param {String} color 
+   * @param {Dot} d1
+   * @param {Dot} d2
+   * @param {String} color
    * */
-  constructor(d1, d2, color) {
+  constructor(d1, d2) {
     this.hash = randomHash();
     this.dots = [d1, d2];
-    this.color = color;
+    this.color = d1.isInput ? d2.connectionColor: d1.connectionColor;
   }
 
   destroy() {
@@ -116,40 +119,44 @@ class Connection {
 class Dot {
   static selectedDot = false;
   /**
+   * @param {number} index
    * @param {boolean} alignLeft
    * @param {Box} parentBox
    * */
-  constructor(isInput, parentBox) {
+  constructor(index, isInput, parentBox) {
     this.isInput = isInput;
     this.parentBox = parentBox;
     this.ele = document.createElement("div");
     this.ele.classList.add("dot");
     this.connections = {};
-    this.connectionColor = null;
+    this.connectionColor = isInput ? "white" : ColorGenrator.getColor();
+    this.index = index;
+
+    this.ele.style.backgroundColor = this.connectionColor;
   }
 
   /**
    * @param {Dot} d
-   * @param {Connection} conn 
+   * @param {Connection} conn
    * called by Connector.addConnection
    * */
   connect(d, conn) {
-    this.connectionColor = d.connectionColor;
+    if (this.isInput) {
+      this.ele.style.backgroundColor = d.connectionColor;
+      this.parentBox.gate.setInput(this.index, d.parentBox.gate, d.index);
+    }
     this.connections[conn.hash] = conn;
-    this.ele.style.backgroundColor = this.connectionColor;
   }
-  
+
   removeConnection(connHash) {
     delete this.connections[connHash];
-    if (Object.keys(this.connections).length == 0) 
-      this.ele.style.backgroundColor = "";
+    this.ele.style.backgroundColor = this.connectionColor;
   }
 
   removeAllConnections() {
     const connHashes = Object.keys(this.connections);
-    for (const connHash of connHashes)
-      this.connections[connHash].destroy();
-    this.ele.style.backgroundColor = "";
+    for (const connHash of connHashes) this.connections[connHash].destroy();
+    this.ele.style.backgroundColor = this.connectionColor;
   }
 
   render(parentElement) {
@@ -157,21 +164,22 @@ class Dot {
     this.ele.addEventListener("contextmenu", (e) => {
       e.preventDefault();
       this.removeAllConnections();
-    })
+    });
     this.ele.addEventListener("click", (e) => {
       e.preventDefault();
 
       // connecting both
       if (Dot.selectedDot) {
-        const conn = new Connection(this, Dot.selectedDot, Dot.selectedDot.connectionColor);
-        Connector.addConnection(conn);
+        if (Dot.selectedDot.isInput != this.isInput) {
+          const conn = new Connection(
+            this,
+            Dot.selectedDot
+          );
+          Connector.addConnection(conn);
+        }
         Dot.selectedDot = false;
         return;
       }
-
-      if (!this.connectionColor)
-        this.connectionColor = ColorGenrator.getColor();
-      this.ele.style.backgroundColor = this.connectionColor;
 
       Dot.selectedDot = this;
     });
@@ -185,6 +193,7 @@ class DotContainer {
    * */
   constructor(isInput, parentBox) {
     this.isInput = isInput;
+    this.indexCounter = 0;
     this.parentBox = parentBox;
     this.ele = document.createElement("div");
     this.ele.classList.add("dotContainer");
@@ -195,7 +204,7 @@ class DotContainer {
    * @returns {Dot} Dot just added
    * */
   addDot() {
-    const d = new Dot(this.isInput, this.parentBox);
+    const d = new Dot(this.indexCounter++, this.isInput, this.parentBox);
     d.render(this.ele);
     return d;
   }
@@ -204,29 +213,39 @@ export class Box {
   /**
    * @param {number} x
    * @param {number} y
-   * @param {String} name
    * @param {number} w
    * @param {number} h
+   * @param {Gate} gate
    * */
-  constructor(x, y, w, h, name) {
+  constructor(x, y, w, h, gate) {
+    this.gate = gate;
+
     this.ele = document.createElement("div");
     this.ele.classList.add("box");
 
-    this.inputContainer = new DotContainer(true, this);
+    this.dots = [];
+    if (gate.inCount) {
+      this.inputContainer = new DotContainer(true, this);
+      for (let i = 0; i < gate.inCount; i++)
+        this.dots.push(this.inputContainer.addDot());
+    } else this.inputContainer = null;
+
     this.nameEle = document.createElement("h1");
     this.ele.appendChild(this.nameEle);
-    this.outputContainer = new DotContainer(false, this);
 
-    this.dots = [];
-    this.dots.push(this.inputContainer.addDot());
-    this.dots.push(this.outputContainer.addDot());
+    if (gate.outCount) {
+      this.outputContainer = new DotContainer(false, this);
+      for (let i = 0; i < gate.outCount; i++)
+        this.dots.push(this.outputContainer.addDot());
+    } else this.outputContainer = null;
 
     this.setHeight(h);
     this.setWidth(w);
 
     this.setX(x);
     this.setY(y);
-    this.setName(name);
+    if (gate.inCount && gate.outCount) this.setName(gate.name);
+    else this.setName("");
   }
 
   setX(x) {

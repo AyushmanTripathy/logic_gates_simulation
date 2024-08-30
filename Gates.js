@@ -1,0 +1,64 @@
+export const logicFuncs = {
+  AND: (ins) => {
+    for (const x of ins) {
+      if (!x) return [false];
+    }
+    return [true];
+  },
+  BUFFER: (ins) => [...ins],
+  NOT: (ins) => !ins[0],
+};
+
+export class Gate {
+  /**
+   * @param {String} name
+   * @param {number} inCount
+   * @param {CallableFunction[]} outLogicFuncs
+   * */
+  constructor(name, inCount, outLogicFuncs) {
+    this.name = name;
+    this.inCount = inCount;
+    /**
+     * @type {Gate[]} inputs
+     * */
+    this.inputs = new Array(inCount).fill(null);
+    this.inputsIndex = new Array(inCount).fill(null);
+    this.outCount = outLogicFuncs.length;
+    this.outLogicFuncs = outLogicFuncs;
+  }
+
+  /**
+   * @param {number} index
+   * fetches the value from the gate
+   * @returns {boolean[]}
+   * */
+  fetchOutput(index) {
+    if (0 > index || index >= this.outCount)
+      throw "Cannot fetchOutput for " + index;
+    const func = this.outLogicFuncs[index];
+    const ins = [];
+    for (let i = 0; i < this.inCount; i++) {
+      if (this.inputs[i])
+        ins.push(this.inputs[i].fetchOutput(this.inputsIndex[i]));
+      else ins.push(0);
+    }
+    const outs = this.outLogicFuncs[index](ins);
+    // have to implement caching here
+    return outs;
+  }
+
+  /**
+   * @param {Gate} inputGate
+   * @param {number} asIndex
+   * @param {number} gateIndex
+   * @returns {boolean}
+   * */
+  setInput(asIndex, inputGate, gateIndex) {
+    if (asIndex < 0 || asIndex >= this.inCount)
+      throw "cannot setInput for " + asIndex;
+    if (this.inputsIndex[asIndex] != null) return false;
+    this.inputs[asIndex] = inputGate;
+    this.inputsIndex[asIndex] = gateIndex;
+    return true;
+  }
+}
