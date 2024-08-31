@@ -28,6 +28,8 @@ export class Gate {
     this.outCount = outLogicFuncs.length;
     this.outLogicFuncs = outLogicFuncs;
     this.outputCaches = new Array(this.outCount).fill(null);
+
+    console.log(this);
   }
 
   /**
@@ -51,8 +53,10 @@ export class Gate {
     if (0 > index || index >= this.outCount)
       throw "Cannot fetchOutput for " + index;
     if (this.outputCaches[index] === null) {
-      this.outputCaches[index] = this.outLogicFuncs[index](this.fetchAllInputs());
-      setTimeout(() => this.outputCaches[index] = null, cacheInvalidTime);
+      this.outputCaches[index] = this.outLogicFuncs[index](
+        this.fetchAllInputs()
+      );
+      setTimeout(() => (this.outputCaches[index] = null), cacheInvalidTime);
     }
     return this.outputCaches[index];
   }
