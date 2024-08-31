@@ -40,6 +40,11 @@
       text-align: center;
       background: red;
     }
+    .popup {
+      position: absolute;
+      border: 1px solid white;
+      padding: 10px;
+    }
     .dot {
       height: 20px;
       width: 20px;
@@ -70,7 +75,6 @@
     const canvas = document.getElementById("gameCanvas");
     const sim = new Simulation([true, true], 2, ele, canvas);
     setInterval(() => {
-      sim.updateInput(0, false);
       console.log(sim.fetchOutputs()) 
     }, 1000);
   </script>

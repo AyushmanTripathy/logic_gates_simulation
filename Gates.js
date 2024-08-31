@@ -1,12 +1,24 @@
-export const logicFuncs = {
-  AND: (ins) => {
-    for (const x of ins) {
-      if (!x) return false;
-    }
-    return true;
+export const availableGates = {
+  AND: {
+    in: 2,
+    out: 1,
+    logic: (ins) => {
+      for (const x of ins) {
+        if (!x) return false;
+      }
+      return true;
+    },
   },
-  BUFFER: (ins) => ins[0],
-  NOT: (ins) => !ins[0],
+  BUFFER: {
+    in: 1,
+    out: 1,
+    logic: (ins) => ins[0],
+  },
+  NOT: {
+    in: 1,
+    out: 1,
+    logic: (ins) => !ins[0],
+  },
 };
 
 const cacheInvalidTime = 500;

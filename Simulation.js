@@ -1,9 +1,39 @@
 import { Box, Connector } from "./Basic.js";
-import { Gate, logicFuncs } from "./Gates.js";
+import { Gate, availableGates } from "./Gates.js";
 
 const fixedBuffer = (a, i) => {
   return () => a[i];
 };
+
+class PopupMenu {
+  /**
+   * @param {number} x
+   * @param {number} y
+   * @param {String[]} options
+   * @param {CallableFunction} callback
+   * */
+  constructor(x, y, options, callback) {
+    this.ele = document.createElement("div");
+    this.ele.classList.add("popup");
+    for (const opt of options) {
+      const p = document.createElement("p");
+      p.innerText = opt;
+      p.onclick = () => {
+        this.remove();
+        callback(opt);
+      };
+      this.ele.appendChild(p);
+      this.ele.style.top = y + "px";
+      this.ele.style.left = x + "px";
+    }
+  }
+  remove() {
+    this.ele.remove();
+  }
+  render(parentEle) {
+    parentEle.appendChild(this.ele);
+  }
+}
 
 export default class Simulation {
   /**
@@ -16,6 +46,8 @@ export default class Simulation {
     new Connector(mainEle, canvasEle);
     globalThis.gridHeight = mainEle.clientHeight;
     globalThis.gridWidth = mainEle.clientWidth;
+
+    this.mainEle = mainEle;
 
     this.inputValues = [...inputValuesArr];
     this.inputCount = inputValuesArr.length;
@@ -51,14 +83,28 @@ export default class Simulation {
       // ignore bubbled events
       if (e.target != mainEle) return;
       e.preventDefault();
-      const andGate = new Gate("AND", 2, [logicFuncs.AND]);
-      const b = new Box(e.offsetX, e.offsetY, 100, 100, andGate);
-      b.render(mainEle);
 
-      b.ele.addEventListener("click", () => console.log(b));
+      const x = e.offsetX,
+        y = e.offsetY;
+      new PopupMenu(x, y, Object.keys(availableGates), (key) => {
+        this.addGate(key, x, y, availableGates[key].in, [
+          availableGates[key].logic,
+        ]);
+      }).render(this.mainEle);
     });
   }
-
+  /**
+   * @param {String} name
+   * @param {number} x
+   * @param {number} y
+   * @param {CallableFunction[]} logicFuncs
+   * @param {number} outCount
+   * */
+  addGate(name, x, y, inCount, outLogicFuncs) {
+    const gate = new Gate(name, inCount, outLogicFuncs);
+    const b = new Box(x, y, 100, 100, gate);
+    b.render(this.mainEle);
+  }
   /**
    * @param {number} index
    * @param {boolean} value
