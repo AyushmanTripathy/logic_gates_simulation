@@ -33,7 +33,7 @@ export class Gate {
     this.name = name;
     this.inCount = inCount;
     /**
-     * @type {Gate[]} inputs
+     * @type {(Gate|null)[]} inputs
      * */
     this.inputs = new Array(inCount).fill(null);
     this.inputsIndex = new Array(inCount).fill(null);
@@ -50,8 +50,8 @@ export class Gate {
   fetchAllInputs() {
     const ins = [];
     for (let i = 0; i < this.inCount; i++) {
-      if (this.inputs[i])
-        ins.push(this.inputs[i].fetchOutput(this.inputsIndex[i]));
+      const inputGate = this.inputs[i];
+      if (inputGate) ins.push(inputGate.fetchOutput(this.inputsIndex[i]));
       else ins.push(false);
     }
     return ins;
@@ -96,6 +96,7 @@ export class Gate {
     return true;
   }
 
+  /** @param {number} index */
   removeInput(index) {
     if (index < 0 || index >= this.inCount)
       throw "cannot removeInput for " + index;

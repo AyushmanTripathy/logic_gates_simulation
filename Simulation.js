@@ -1,18 +1,29 @@
 import { Box, Connector } from "./Basic.js";
 import { Gate, availableGates } from "./Gates.js";
 
+/**
+ * @param {boolean[]} a;
+ * @param {number} i;
+ * */
 const fixedBuffer = (a, i) => {
   return () => a[i];
 };
 
 class PopupMenu {
   /**
+   * @type {PopupMenu|null} instance
+   * */
+  static instance = null;
+  /**
    * @param {number} x
    * @param {number} y
    * @param {String[]} options
-   * @param {CallableFunction} callback
-   * */
+   * @param {(key: string) => undefined} callback
+   **/
   constructor(x, y, options, callback) {
+    if (PopupMenu.instance) PopupMenu.instance.remove();
+    PopupMenu.instance = this;
+
     this.ele = document.createElement("div");
     this.ele.classList.add("popup");
     for (const opt of options) {
@@ -28,8 +39,10 @@ class PopupMenu {
     }
   }
   remove() {
+    PopupMenu.instance = null;
     this.ele.remove();
   }
+  /** @param {HTMLElement} parentEle */
   render(parentEle) {
     parentEle.appendChild(this.ele);
   }
@@ -37,7 +50,7 @@ class PopupMenu {
 
 export default class Simulation {
   /**
-   * @param {number[]} inputValuesArr
+   * @param {boolean[]} inputValuesArr
    * @param {number} outputCount
    * @param {HTMLElement} mainEle
    * @param {HTMLCanvasElement} canvasEle
@@ -97,17 +110,18 @@ export default class Simulation {
    * @param {String} name
    * @param {number} x
    * @param {number} y
-   * @param {CallableFunction[]} logicFuncs
-   * @param {number} outCount
+   * @param {CallableFunction[]} outLogicFuncs
+   * @param {number} inCount
    * */
   addGate(name, x, y, inCount, outLogicFuncs) {
     const gate = new Gate(name, inCount, outLogicFuncs);
-    const b = new Box(x, y, 100, 100, gate);
+    const b = new Box(x, y, 150, 100, gate);
     b.render(this.mainEle);
   }
   /**
    * @param {number} index
    * @param {boolean} value
+   * @returns {undefined}
    * */
   updateInput(index, value) {
     if (index < 0 || this.inputCount <= index)

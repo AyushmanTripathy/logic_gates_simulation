@@ -10,6 +10,9 @@ every Box will have a gate associated with it
     - cache the value for some time, before recomputing.
     - call the output gates in time interval
 
+    - incase element is connected to itself
+        1. remebers the previous state
+
 ### TODO
 
 [x] Gates structure

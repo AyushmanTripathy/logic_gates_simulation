@@ -22,6 +22,7 @@ function boundToRange(x, min, max) {
   return x;
 }
 
+/** @returns {string} Random hash string */
 function randomHash() {
   let s = "";
   for (let i = 0; i < 10; i++) {
@@ -32,6 +33,7 @@ function randomHash() {
 
 export class Connector {
   static hasInstance = false;
+  /** @type {Connector}*/
   static instance;
 
   /**
@@ -39,9 +41,12 @@ export class Connector {
    * @param {HTMLCanvasElement} canvasEle
    * */
   constructor(boxContainerEle, canvasEle) {
-    if (this.hasInstance) throw "Connector instance present";
+    if (Connector.hasInstance) throw "Connector instance present";
     Connector.hasInstance = true;
-    this.ctx = canvasEle.getContext("2d");
+    const canvasCtx = canvasEle.getContext("2d");
+    if (canvasCtx instanceof CanvasRenderingContext2D) this.ctx = canvasCtx;
+    else throw "Canvas getContext gives null";
+
     this.boxContainerRect = boxContainerEle.getBoundingClientRect();
     this.connections = {};
     Connector.instance = this;
@@ -55,8 +60,9 @@ export class Connector {
     if (conn.dots[0].isInput == conn.dots[1].isInput) return;
 
     // if is output dot and already connected with other
+    /** @type {(d:Dot)=>boolean} */
     const checkOutputCondition = (d) =>
-      d.isInput && Object.keys(d.connections).length;
+      d.isInput && !!Object.keys(d.connections).length;
     if (checkOutputCondition(conn.dots[0])) return;
     if (checkOutputCondition(conn.dots[1])) return;
 
@@ -70,6 +76,7 @@ export class Connector {
     if (!this.hasInstance) throw "no Connector instance";
     this.instance.drawConnections();
   }
+  /** @param {string} connHash */
   static removeConnection(connHash) {
     if (!this.hasInstance) throw "no Connector instance";
     delete this.instance.connections[connHash];
@@ -77,6 +84,7 @@ export class Connector {
   }
   /**
    * @param {HTMLElement} ele
+   * @returns {Object}
    * */
   getPos(ele) {
     const rect = ele.getBoundingClientRect();
@@ -94,6 +102,15 @@ export class Connector {
       this.drawConnectionLine(p, q, conn.color);
     }
   }
+  /**
+   * @param {Object} p
+   * @param {number} p.x
+   * @param {number} p.y
+   * @param {string} color
+   * @param {Object} q
+   * @param {number} q.x
+   * @param {number} q.y
+   * */
   drawConnectionLine(p, q, color) {
     this.ctx.strokeStyle = color;
     this.ctx.lineWidth = 5;
@@ -108,7 +125,6 @@ class Connection {
   /**
    * @param {Dot} d1
    * @param {Dot} d2
-   * @param {String} color
    * */
   constructor(d1, d2) {
     if (d1.hashId == d2.hashId) throw "Cannot create same dots";
@@ -125,10 +141,11 @@ class Connection {
 }
 
 class Dot {
-  static selectedDot = false;
+  /** @type {Dot|null} */
+  static selectedDot = null;
   /**
    * @param {number} index
-   * @param {boolean} alignLeft
+   * @param {boolean} isInput
    * @param {Box} parentBox
    * */
   constructor(index, isInput, parentBox) {
@@ -157,6 +174,10 @@ class Dot {
     this.connections[conn.hash] = conn;
   }
 
+  /**
+   * @param {string} connHash
+   * @returns {undefined}
+   */
   removeConnection(connHash) {
     delete this.connections[connHash];
     if (this.isInput) {
@@ -171,6 +192,7 @@ class Dot {
     this.ele.style.backgroundColor = this.connectionColor;
   }
 
+  /** @param {HTMLElement} parentElement */
   render(parentElement) {
     parentElement.appendChild(this.ele);
     this.ele.addEventListener("contextmenu", (e) => {
@@ -184,7 +206,7 @@ class Dot {
       if (Dot.selectedDot && Dot.selectedDot.hashId != this.hashId) {
         const conn = new Connection(this, Dot.selectedDot);
         Connector.addConnection(conn);
-        Dot.selectedDot = false;
+        Dot.selectedDot = null;
         return;
       }
 
@@ -196,7 +218,7 @@ class Dot {
 class DotContainer {
   /**
    * @param {Box} parentBox
-   * @param {boolean} alignLeft
+   * @param {boolean} isInput
    * */
   constructor(isInput, parentBox) {
     this.isInput = isInput;
@@ -217,6 +239,18 @@ class DotContainer {
   }
 }
 export class Box {
+  /** @type {number} */
+  x;
+  /** @type {number} */
+  y;
+  /** @type {number} */
+  height;
+  /** @type {number} */
+  width;
+  /** @type {number}*/
+  dragStartScreenY;
+  /** @type {number}*/
+  dragStartScreenX;
   /**
    * @param {number} x
    * @param {number} y
@@ -254,33 +288,37 @@ export class Box {
     if (gate.inCount && gate.outCount) this.setName(gate.name);
     else this.setName("");
   }
-
+  /** @param {number} x */
   setX(x) {
     if (typeof x != "number") throw TypeError();
     this.x = boundToRange(x, 0, globalThis.gridWidth - this.width);
     this.ele.style.left = this.x + "px";
   }
+  /** @param {number} y */
   setY(y) {
     if (typeof y != "number") throw TypeError();
     this.y = boundToRange(y, 0, globalThis.gridHeight - this.height);
     this.ele.style.top = this.y + "px";
   }
-
+  /** @param {string} name */
   setName(name) {
     this.name = name;
     this.nameEle.innerText = name;
   }
+  /** @param {number} h */
   setHeight(h) {
     if (typeof h != "number") throw TypeError();
     this.height = h;
     this.ele.style.height = this.height + "px";
   }
+  /** @param {number} w */
   setWidth(w) {
     if (typeof w != "number") throw TypeError();
     this.width = w;
     this.ele.style.width = this.width + "px";
   }
 
+  /** @param {HTMLElement} parentElement */
   render(parentElement) {
     // making the element draggable
     this.ele.draggable = true;
@@ -289,21 +327,29 @@ export class Box {
     parentElement.appendChild(this.ele);
   }
 
+  /**
+   * @param {Box} box
+   * @returns {(e:DragEvent) => undefined}
+   * */
   handleDragStart(box) {
     return (e) => {
-      e.target.style.opacity = 0.4;
+      if (e.target instanceof HTMLElement) e.target.style.opacity = "0.4";
       box.dragStartScreenX = e.screenX;
       box.dragStartScreenY = e.screenY;
     };
   }
 
+  /**
+   * @param {Box} box
+   * @returns {(e:DragEvent) => undefined}
+   * */
   handleDragEnd(box) {
     return (e) => {
-      e.target.style.opacity = 1;
+      if (e.target instanceof HTMLElement) e.target.style.opacity = "1";
       box.setX(box.x + e.screenX - box.dragStartScreenX);
       box.setY(box.y + e.screenY - box.dragStartScreenY);
-      box.dragStartScreenX = null;
-      box.dragStartScreenY = null;
+      box.dragStartScreenX = 0;
+      box.dragStartScreenY = 0;
       Connector.reDraw();
     };
   }
