@@ -41,6 +41,7 @@ export default class Simulation {
   inputCount: number;
   outputCount: number;
   outputBufferGate: Gate;
+  gates: Gate[];
   constructor(
     inputValuesArr: boolean[],
     outputCount: number,
@@ -79,6 +80,7 @@ export default class Simulation {
       200,
       this.outputBufferGate
     );
+    this.gates = [inputBufferGate, this.outputBufferGate];
 
     inputBox.render(mainEle);
     outputBox.render(mainEle);
@@ -105,8 +107,12 @@ export default class Simulation {
     outLogicFuncs: LogicGateFunction[]
   ) {
     const gate = new Gate(name, inCount, outLogicFuncs);
+    this.gates.push(gate);
     const b = new Box(x, y, 150, 100, gate);
     b.render(this.mainEle);
+  }
+  cycle() {
+    for (const gate of this.gates) gate.computeOutput();
   }
   updateInput(index: number, value: boolean) {
     if (index < 0 || this.inputCount <= index)

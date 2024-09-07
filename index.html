@@ -73,8 +73,9 @@
     import Simulation from "/js/Simulation.js";
     const ele = document.getElementById("gameMain");
     const canvas = document.getElementById("gameCanvas");
-    const sim = new Simulation([false, false], 2, ele, canvas);
+    const sim = new Simulation([true, false], 2, ele, canvas);
     setInterval(() => {
+      sim.cycle();
       console.log(sim.fetchOutputs()) 
     }, 1000);
   </script>

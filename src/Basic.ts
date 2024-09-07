@@ -28,6 +28,7 @@ function boundToRange(x: number, min: number, max: number): number {
 function randomHash(): string {
   let s = "";
   for (let i = 0; i < 10; i++) {
+    s += String.fromCharCode(33 + Math.floor(Math.random() * 90));
   }
   return s;
 }
@@ -35,7 +36,6 @@ function randomHash(): string {
 export class Connector {
   static hasInstance = false;
   static instance: Connector;
-
 
   boxContainerRect: DOMRect;
   connections: Connections;

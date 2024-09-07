@@ -14,12 +14,17 @@ export const availableGates: LogicGateInfoMap = {
   AND: {
     in: 2,
     out: 1,
-    logic: (ins) => {
-      for (const x of ins) {
-        if (!x) return false;
-      }
-      return true;
-    },
+    logic: (ins) => ins[0] && ins[1]
+  },
+  OR: {
+    in: 2,
+    out: 1,
+    logic: (ins) => ins[0] || ins[1]
+  },
+  XOR: {
+    in: 2,
+    out: 1,
+    logic: (ins) => !(ins[0] == ins[1])
   },
   BUFFER: {
     in: 1,
@@ -53,14 +58,13 @@ export class Gate {
     this.outCount = outLogicFuncs.length;
     this.outLogicFuncs = outLogicFuncs;
     this.outputCaches = new Array(this.outCount).fill(false);
-
-    console.log(this);
   }
 
   fetchAllInputs(): boolean[] {
     const ins: boolean[] = [];
     for (let i = 0; i < this.inCount; i++) {
-      const inputGate = this.inputs[i], index = this.inputsIndex[i];
+      const inputGate = this.inputs[i],
+        index = this.inputsIndex[i];
       if (inputGate) {
         if (index == null) throw "Index not found for Gate";
         else ins.push(inputGate.fetchOutput(index));
@@ -68,14 +72,8 @@ export class Gate {
     }
     return ins;
   }
+
   fetchOutput(index: number): boolean {
-    if (0 > index || index >= this.outCount)
-      throw "Cannot fetchOutput for " + index;
-    if (this.outputCaches[index] === null) {
-      this.outputCaches[index] = this.outLogicFuncs[index](
-        this.fetchAllInputs()
-      );
-    }
     return this.outputCaches[index];
   }
 
@@ -84,6 +82,14 @@ export class Gate {
     for (let i = 0; i < this.outCount; i++) outs.push(this.fetchOutput(i));
     return outs;
   }
+
+  computeOutput() {
+    const inputValues = this.fetchAllInputs();
+    for (let i = 0; i < this.outCount; i++) {
+      this.outputCaches[i] = this.outLogicFuncs[i](inputValues);
+    }
+  }
+
   setInput(asIndex: number, inputGate: Gate, gateIndex: number): boolean {
     if (asIndex < 0 || asIndex >= this.inCount)
       throw "cannot setInput for " + asIndex;
