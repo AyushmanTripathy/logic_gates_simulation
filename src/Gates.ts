@@ -1,4 +1,16 @@
-export const availableGates = {
+export type LogicGateFunction = (ins: boolean[]) => boolean;
+
+interface LogicGateInfo {
+  in: number;
+  out: number;
+  logic: LogicGateFunction;
+}
+
+interface LogicGateInfoMap {
+  [key: string]: LogicGateInfo;
+}
+
+export const availableGates: LogicGateInfoMap = {
   AND: {
     in: 2,
     out: 1,
@@ -21,25 +33,31 @@ export const availableGates = {
   },
 };
 
-const cacheInvalidTime = 500;
-
 export class Gate {
   /**
    * @param {String} name
    * @param {number} inCount
-   * @param {CallableFunction[]} outLogicFuncs
+   * @param {LogicGateFunction[]} outLogicFuncs
    * */
-  constructor(name, inCount, outLogicFuncs) {
+  name: string;
+  inCount: number;
+  inputs: (Gate | null)[];
+  inputsIndex: (number | null)[];
+  outCount: number;
+  outLogicFuncs: LogicGateFunction[];
+  outputCaches: boolean[];
+  constructor(
+    name: string,
+    inCount: number,
+    outLogicFuncs: LogicGateFunction[]
+  ) {
     this.name = name;
     this.inCount = inCount;
-    /**
-     * @type {(Gate|null)[]} inputs
-     * */
     this.inputs = new Array(inCount).fill(null);
     this.inputsIndex = new Array(inCount).fill(null);
     this.outCount = outLogicFuncs.length;
     this.outLogicFuncs = outLogicFuncs;
-    this.outputCaches = new Array(this.outCount).fill(null);
+    this.outputCaches = new Array(this.outCount).fill(false);
 
     console.log(this);
   }
@@ -47,12 +65,14 @@ export class Gate {
   /**
    * @returns {boolean[]}
    * */
-  fetchAllInputs() {
-    const ins = [];
+  fetchAllInputs(): boolean[] {
+    const ins: boolean[] = [];
     for (let i = 0; i < this.inCount; i++) {
-      const inputGate = this.inputs[i];
-      if (inputGate) ins.push(inputGate.fetchOutput(this.inputsIndex[i]));
-      else ins.push(false);
+      const inputGate = this.inputs[i], index = this.inputsIndex[i];
+      if (inputGate) {
+        if (index == null) throw "Index not found for Gate";
+        else ins.push(inputGate.fetchOutput(index));
+      } else ins.push(false);
     }
     return ins;
   }
@@ -61,14 +81,13 @@ export class Gate {
    * fetches the value from the gate
    * @returns {boolean}
    * */
-  fetchOutput(index) {
+  fetchOutput(index: number): boolean {
     if (0 > index || index >= this.outCount)
       throw "Cannot fetchOutput for " + index;
     if (this.outputCaches[index] === null) {
       this.outputCaches[index] = this.outLogicFuncs[index](
         this.fetchAllInputs()
       );
-      setTimeout(() => (this.outputCaches[index] = null), cacheInvalidTime);
     }
     return this.outputCaches[index];
   }
@@ -76,7 +95,7 @@ export class Gate {
   /**
    * @returns {boolean[]}
    * */
-  fetchAllOutput() {
+  fetchAllOutput(): boolean[] {
     const outs = [];
     for (let i = 0; i < this.outCount; i++) outs.push(this.fetchOutput(i));
     return outs;
@@ -87,7 +106,7 @@ export class Gate {
    * @param {number} gateIndex
    * @returns {boolean}
    * */
-  setInput(asIndex, inputGate, gateIndex) {
+  setInput(asIndex: number, inputGate: Gate, gateIndex: number): boolean {
     if (asIndex < 0 || asIndex >= this.inCount)
       throw "cannot setInput for " + asIndex;
     if (this.inputsIndex[asIndex] != null) return false;
@@ -97,7 +116,7 @@ export class Gate {
   }
 
   /** @param {number} index */
-  removeInput(index) {
+  removeInput(index: number) {
     if (index < 0 || index >= this.inCount)
       throw "cannot removeInput for " + index;
     this.inputsIndex[index] = null;

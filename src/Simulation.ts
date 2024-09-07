@@ -1,11 +1,7 @@
 import { Box, Connector } from "./Basic.js";
-import { Gate, availableGates } from "./Gates.js";
+import { Gate, LogicGateFunction, availableGates } from "./Gates.js";
 
-/**
- * @param {boolean[]} a;
- * @param {number} i;
- * */
-const fixedBuffer = (a, i) => {
+const fixedBuffer = (a: boolean[], i: number) => {
   return () => a[i];
 };
 
@@ -13,14 +9,15 @@ class PopupMenu {
   /**
    * @type {PopupMenu|null} instance
    * */
-  static instance = null;
+  static instance: PopupMenu | null = null;
+  ele: HTMLElement;
   /**
    * @param {number} x
    * @param {number} y
    * @param {String[]} options
    * @param {(key: string) => undefined} callback
    **/
-  constructor(x, y, options, callback) {
+  constructor(x: number, y: number, options: string[], callback: Function) {
     if (PopupMenu.instance) PopupMenu.instance.remove();
     PopupMenu.instance = this;
 
@@ -42,8 +39,7 @@ class PopupMenu {
     PopupMenu.instance = null;
     this.ele.remove();
   }
-  /** @param {HTMLElement} parentEle */
-  render(parentEle) {
+  render(parentEle: HTMLElement) {
     parentEle.appendChild(this.ele);
   }
 }
@@ -55,7 +51,17 @@ export default class Simulation {
    * @param {HTMLElement} mainEle
    * @param {HTMLCanvasElement} canvasEle
    */
-  constructor(inputValuesArr, outputCount, mainEle, canvasEle) {
+  mainEle: HTMLElement;
+  inputValues: boolean[];
+  inputCount: number;
+  outputCount: number;
+  outputBufferGate: Gate;
+  constructor(
+    inputValuesArr: boolean[],
+    outputCount: number,
+    mainEle: HTMLElement,
+    canvasEle: HTMLCanvasElement
+  ) {
     new Connector(mainEle, canvasEle);
     globalThis.gridHeight = mainEle.clientHeight;
     globalThis.gridWidth = mainEle.clientWidth;
@@ -99,7 +105,7 @@ export default class Simulation {
 
       const x = e.offsetX,
         y = e.offsetY;
-      new PopupMenu(x, y, Object.keys(availableGates), (key) => {
+      new PopupMenu(x, y, Object.keys(availableGates), (key: string) => {
         this.addGate(key, x, y, availableGates[key].in, [
           availableGates[key].logic,
         ]);
@@ -113,7 +119,13 @@ export default class Simulation {
    * @param {CallableFunction[]} outLogicFuncs
    * @param {number} inCount
    * */
-  addGate(name, x, y, inCount, outLogicFuncs) {
+  addGate(
+    name: string,
+    x: number,
+    y: number,
+    inCount: number,
+    outLogicFuncs: LogicGateFunction[]
+  ) {
     const gate = new Gate(name, inCount, outLogicFuncs);
     const b = new Box(x, y, 150, 100, gate);
     b.render(this.mainEle);
@@ -121,9 +133,8 @@ export default class Simulation {
   /**
    * @param {number} index
    * @param {boolean} value
-   * @returns {undefined}
    * */
-  updateInput(index, value) {
+  updateInput(index: number, value: boolean) {
     if (index < 0 || this.inputCount <= index)
       throw "cannot update index " + index;
     if (typeof value != "boolean") throw "cannot update to value " + value;
@@ -132,7 +143,7 @@ export default class Simulation {
   /**
    * @returns {boolean[]}
    * */
-  fetchOutputs() {
+  fetchOutputs(): boolean[] {
     return this.outputBufferGate.fetchAllInputs();
   }
 }

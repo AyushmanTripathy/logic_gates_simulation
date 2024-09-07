@@ -1,0 +1,8 @@
+{
+  "include": ["src"],
+  "compilerOptions": {
+    "target": "esnext",
+    "removeComments": true,
+    "outDir": "js"
+  }
+}

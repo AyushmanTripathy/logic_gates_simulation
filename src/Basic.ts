@@ -1,5 +1,14 @@
 import { Gate } from "./Gates.js";
 
+interface Point {
+  x: number;
+  y: number;
+}
+
+interface Connections {
+  [key: string]: Connection;
+}
+
 export class ColorGenrator {
   static colors = ["aqua", "lime", "purple", "fuchsia", "teal"];
   static colorIndex = 0;
@@ -16,14 +25,14 @@ export class ColorGenrator {
  * @param {number} max
  * @returns {number} bound to range [min, max]
  * */
-function boundToRange(x, min, max) {
+function boundToRange(x: number, min: number, max: number): number {
   if (x < min) return min;
   if (x > max) return max;
   return x;
 }
 
 /** @returns {string} Random hash string */
-function randomHash() {
+function randomHash(): string {
   let s = "";
   for (let i = 0; i < 10; i++) {
     s += String.fromCharCode(33 + Math.floor(Math.random() * 90));
@@ -33,14 +42,17 @@ function randomHash() {
 
 export class Connector {
   static hasInstance = false;
-  /** @type {Connector}*/
-  static instance;
+  static instance: Connector;
 
   /**
    * @param {HTMLElement} boxContainerEle
    * @param {HTMLCanvasElement} canvasEle
    * */
-  constructor(boxContainerEle, canvasEle) {
+
+  boxContainerRect: DOMRect;
+  connections: Connections;
+  ctx: CanvasRenderingContext2D;
+  constructor(boxContainerEle: HTMLElement, canvasEle: HTMLCanvasElement) {
     if (Connector.hasInstance) throw "Connector instance present";
     Connector.hasInstance = true;
     const canvasCtx = canvasEle.getContext("2d");
@@ -55,13 +67,12 @@ export class Connector {
   /**
    * @param {Connection} conn
    * */
-  static addConnection(conn) {
+  static addConnection(conn: Connection) {
     if (!this.hasInstance) throw "no Connector instance";
     if (conn.dots[0].isInput == conn.dots[1].isInput) return;
 
     // if is output dot and already connected with other
-    /** @type {(d:Dot)=>boolean} */
-    const checkOutputCondition = (d) =>
+    const checkOutputCondition = (d: Dot) =>
       d.isInput && !!Object.keys(d.connections).length;
     if (checkOutputCondition(conn.dots[0])) return;
     if (checkOutputCondition(conn.dots[1])) return;
@@ -77,7 +88,7 @@ export class Connector {
     this.instance.drawConnections();
   }
   /** @param {string} connHash */
-  static removeConnection(connHash) {
+  static removeConnection(connHash: string) {
     if (!this.hasInstance) throw "no Connector instance";
     delete this.instance.connections[connHash];
     Connector.reDraw();
@@ -86,7 +97,7 @@ export class Connector {
    * @param {HTMLElement} ele
    * @returns {Object}
    * */
-  getPos(ele) {
+  getPos(ele: HTMLElement): Point {
     const rect = ele.getBoundingClientRect();
     return {
       x: rect.left - this.boxContainerRect.left + rect.width / 2,
@@ -111,7 +122,7 @@ export class Connector {
    * @param {number} q.x
    * @param {number} q.y
    * */
-  drawConnectionLine(p, q, color) {
+  drawConnectionLine(p: Point, q: Point, color: string) {
     this.ctx.strokeStyle = color;
     this.ctx.lineWidth = 5;
     this.ctx.beginPath();
@@ -126,7 +137,11 @@ class Connection {
    * @param {Dot} d1
    * @param {Dot} d2
    * */
-  constructor(d1, d2) {
+  hash: string;
+  dots: Dot[];
+  color: string;
+  /** @type {Dot|null} */
+  constructor(d1: Dot, d2: Dot) {
     if (d1.hashId == d2.hashId) throw "Cannot create same dots";
     this.hash = randomHash();
     this.dots = [d1, d2];
@@ -141,14 +156,21 @@ class Connection {
 }
 
 class Dot {
-  /** @type {Dot|null} */
-  static selectedDot = null;
+  static selectedDot: Dot | null = null;
   /**
    * @param {number} index
    * @param {boolean} isInput
    * @param {Box} parentBox
    * */
-  constructor(index, isInput, parentBox) {
+  isInput: boolean;
+  parentBox: Box;
+  ele: HTMLElement;
+  connections: Connections;
+  index: number;
+  hashId: string;
+  connectionColor: string;
+
+  constructor(index: number, isInput: boolean, parentBox: Box) {
     this.isInput = isInput;
     this.parentBox = parentBox;
     this.ele = document.createElement("div");
@@ -166,7 +188,7 @@ class Dot {
    * @param {Connection} conn
    * called by Connector.addConnection
    * */
-  connect(d, conn) {
+  connect(d: Dot, conn: Connection) {
     if (this.isInput) {
       this.ele.style.backgroundColor = d.connectionColor;
       this.parentBox.gate.setInput(this.index, d.parentBox.gate, d.index);
@@ -176,9 +198,8 @@ class Dot {
 
   /**
    * @param {string} connHash
-   * @returns {undefined}
    */
-  removeConnection(connHash) {
+  removeConnection(connHash: string) {
     delete this.connections[connHash];
     if (this.isInput) {
       this.parentBox.gate.removeInput(this.index);
@@ -193,7 +214,7 @@ class Dot {
   }
 
   /** @param {HTMLElement} parentElement */
-  render(parentElement) {
+  render(parentElement: HTMLElement) {
     parentElement.appendChild(this.ele);
     this.ele.addEventListener("contextmenu", (e) => {
       e.preventDefault();
@@ -220,9 +241,13 @@ class DotContainer {
    * @param {Box} parentBox
    * @param {boolean} isInput
    * */
-  constructor(isInput, parentBox) {
+  isInput: boolean;
+  indexCounter = 0;
+  parentBox: Box;
+  ele: HTMLElement;
+
+  constructor(isInput: boolean, parentBox: Box) {
     this.isInput = isInput;
-    this.indexCounter = 0;
     this.parentBox = parentBox;
     this.ele = document.createElement("div");
     this.ele.classList.add("dotContainer");
@@ -232,25 +257,27 @@ class DotContainer {
   /**
    * @returns {Dot} Dot just added
    * */
-  addDot() {
+  addDot(): Dot {
     const d = new Dot(this.indexCounter++, this.isInput, this.parentBox);
     d.render(this.ele);
     return d;
   }
 }
 export class Box {
-  /** @type {number} */
-  x;
-  /** @type {number} */
-  y;
-  /** @type {number} */
-  height;
-  /** @type {number} */
-  width;
-  /** @type {number}*/
-  dragStartScreenY;
-  /** @type {number}*/
-  dragStartScreenX;
+  x: number;
+  y: number;
+  height: number;
+  width: number;
+  dragStartScreenY: number | null;
+  dragStartScreenX: number | null;
+
+  ele: HTMLElement;
+  gate: Gate;
+  dots: Dot[];
+  inputContainer: DotContainer;
+  outputContainer: DotContainer;
+  nameEle: HTMLElement;
+
   /**
    * @param {number} x
    * @param {number} y
@@ -258,7 +285,7 @@ export class Box {
    * @param {number} h
    * @param {Gate} gate
    * */
-  constructor(x, y, w, h, gate) {
+  constructor(x: number, y: number, w: number, h: number, gate: Gate) {
     this.gate = gate;
 
     this.ele = document.createElement("div");
@@ -288,38 +315,37 @@ export class Box {
     if (gate.inCount && gate.outCount) this.setName(gate.name);
     else this.setName("");
   }
-  /** @param {number} x */
-  setX(x) {
+
+  setX(x: number) {
     if (typeof x != "number") throw TypeError();
     this.x = boundToRange(x, 0, globalThis.gridWidth - this.width);
     this.ele.style.left = this.x + "px";
   }
   /** @param {number} y */
-  setY(y) {
+  setY(y: number) {
     if (typeof y != "number") throw TypeError();
     this.y = boundToRange(y, 0, globalThis.gridHeight - this.height);
     this.ele.style.top = this.y + "px";
   }
   /** @param {string} name */
-  setName(name) {
-    this.name = name;
+  setName(name: string) {
     this.nameEle.innerText = name;
   }
   /** @param {number} h */
-  setHeight(h) {
+  setHeight(h: number) {
     if (typeof h != "number") throw TypeError();
     this.height = h;
     this.ele.style.height = this.height + "px";
   }
   /** @param {number} w */
-  setWidth(w) {
+  setWidth(w: number) {
     if (typeof w != "number") throw TypeError();
     this.width = w;
     this.ele.style.width = this.width + "px";
   }
 
   /** @param {HTMLElement} parentElement */
-  render(parentElement) {
+  render(parentElement: HTMLElement) {
     // making the element draggable
     this.ele.draggable = true;
     this.ele.addEventListener("dragstart", this.handleDragStart(this));
@@ -327,29 +353,21 @@ export class Box {
     parentElement.appendChild(this.ele);
   }
 
-  /**
-   * @param {Box} box
-   * @returns {(e:DragEvent) => undefined}
-   * */
-  handleDragStart(box) {
-    return (e) => {
+  handleDragStart(box: Box) {
+    return (e: DragEvent) => {
       if (e.target instanceof HTMLElement) e.target.style.opacity = "0.4";
       box.dragStartScreenX = e.screenX;
       box.dragStartScreenY = e.screenY;
     };
   }
 
-  /**
-   * @param {Box} box
-   * @returns {(e:DragEvent) => undefined}
-   * */
-  handleDragEnd(box) {
-    return (e) => {
+  handleDragEnd(box: Box) {
+    return (e: DragEvent) => {
       if (e.target instanceof HTMLElement) e.target.style.opacity = "1";
       box.setX(box.x + e.screenX - box.dragStartScreenX);
       box.setY(box.y + e.screenY - box.dragStartScreenY);
-      box.dragStartScreenX = 0;
-      box.dragStartScreenY = 0;
+      box.dragStartScreenX = null;
+      box.dragStartScreenY = null;
       Connector.reDraw();
     };
   }
