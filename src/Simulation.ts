@@ -6,17 +6,8 @@ const fixedBuffer = (a: boolean[], i: number) => {
 };
 
 class PopupMenu {
-  /**
-   * @type {PopupMenu|null} instance
-   * */
   static instance: PopupMenu | null = null;
   ele: HTMLElement;
-  /**
-   * @param {number} x
-   * @param {number} y
-   * @param {String[]} options
-   * @param {(key: string) => undefined} callback
-   **/
   constructor(x: number, y: number, options: string[], callback: Function) {
     if (PopupMenu.instance) PopupMenu.instance.remove();
     PopupMenu.instance = this;
@@ -45,12 +36,6 @@ class PopupMenu {
 }
 
 export default class Simulation {
-  /**
-   * @param {boolean[]} inputValuesArr
-   * @param {number} outputCount
-   * @param {HTMLElement} mainEle
-   * @param {HTMLCanvasElement} canvasEle
-   */
   mainEle: HTMLElement;
   inputValues: boolean[];
   inputCount: number;
@@ -112,13 +97,6 @@ export default class Simulation {
       }).render(this.mainEle);
     });
   }
-  /**
-   * @param {String} name
-   * @param {number} x
-   * @param {number} y
-   * @param {CallableFunction[]} outLogicFuncs
-   * @param {number} inCount
-   * */
   addGate(
     name: string,
     x: number,
@@ -130,19 +108,12 @@ export default class Simulation {
     const b = new Box(x, y, 150, 100, gate);
     b.render(this.mainEle);
   }
-  /**
-   * @param {number} index
-   * @param {boolean} value
-   * */
   updateInput(index: number, value: boolean) {
     if (index < 0 || this.inputCount <= index)
       throw "cannot update index " + index;
     if (typeof value != "boolean") throw "cannot update to value " + value;
     this.inputValues[index] = value;
   }
-  /**
-   * @returns {boolean[]}
-   * */
   fetchOutputs(): boolean[] {
     return this.outputBufferGate.fetchAllInputs();
   }

@@ -34,11 +34,6 @@ export const availableGates: LogicGateInfoMap = {
 };
 
 export class Gate {
-  /**
-   * @param {String} name
-   * @param {number} inCount
-   * @param {LogicGateFunction[]} outLogicFuncs
-   * */
   name: string;
   inCount: number;
   inputs: (Gate | null)[];
@@ -62,9 +57,6 @@ export class Gate {
     console.log(this);
   }
 
-  /**
-   * @returns {boolean[]}
-   * */
   fetchAllInputs(): boolean[] {
     const ins: boolean[] = [];
     for (let i = 0; i < this.inCount; i++) {
@@ -76,11 +68,6 @@ export class Gate {
     }
     return ins;
   }
-  /**
-   * @param {number} index
-   * fetches the value from the gate
-   * @returns {boolean}
-   * */
   fetchOutput(index: number): boolean {
     if (0 > index || index >= this.outCount)
       throw "Cannot fetchOutput for " + index;
@@ -92,20 +79,11 @@ export class Gate {
     return this.outputCaches[index];
   }
 
-  /**
-   * @returns {boolean[]}
-   * */
   fetchAllOutput(): boolean[] {
     const outs = [];
     for (let i = 0; i < this.outCount; i++) outs.push(this.fetchOutput(i));
     return outs;
   }
-  /**
-   * @param {Gate} inputGate
-   * @param {number} asIndex
-   * @param {number} gateIndex
-   * @returns {boolean}
-   * */
   setInput(asIndex: number, inputGate: Gate, gateIndex: number): boolean {
     if (asIndex < 0 || asIndex >= this.inCount)
       throw "cannot setInput for " + asIndex;
@@ -115,7 +93,6 @@ export class Gate {
     return true;
   }
 
-  /** @param {number} index */
   removeInput(index: number) {
     if (index < 0 || index >= this.inCount)
       throw "cannot removeInput for " + index;
