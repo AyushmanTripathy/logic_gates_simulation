@@ -48,20 +48,27 @@ export class Connector {
     Connector.instance = this;
   }
 
-  static addConnection(conn: Connection) {
+  static addConnection(from: Dot, to:Dot): Connection {
     if (!this.hasInstance) throw "no Connector instance";
 
+    if (from.hashId == to.hashId) throw "Cannot create same dots";
+    if (from.isInput) throw "from cannot be input dot";
+    if (!to.isInput) throw "to cannot be output dot";
+
     // if is input dot and already connected with other
-    if (Object.keys(conn.to.connections).length) {
-      conn.destroy();
-      throw "input dot already connected";
+    if (Object.keys(to.connections).length) {
+      console.log("input dot already connected");
+      to.removeAllConnections();
     }
 
-    conn.from.connect(conn.to, conn);
-    conn.to.connect(conn.from, conn);
+    const conn = new Connection(from, to);
+    from.connect(to, conn);
+    to.connect(from, conn);
 
     this.instance.connections[conn.hash] = conn;
     this.instance.drawConnections();
+
+    return conn;
   }
   static reDraw() {
     if (!this.hasInstance) throw "no Connector instance";
@@ -107,13 +114,10 @@ class Connection {
   isHigh: boolean;
 
   constructor(from: Dot, to: Dot) {
-    if (from.hashId == to.hashId) throw "Cannot create same dots";
-    this.hash = randomHash();
-    if (from.isInput) throw "from cannot be input dot";
-    else this.from = from;
-    if (to.isInput) this.to = to;
-    else throw "to cannot be output dot";
+    this.from = from;
     this.isHigh = false;
+    this.to = to;
+    this.hash = randomHash();
 
     from.parentBox.gate.setOutputCallback(
       from.index,
@@ -191,10 +195,8 @@ class Dot {
 
       // connecting both
       if (Dot.selectedDot && Dot.selectedDot.hashId != this.hashId) {
-        let conn: Connection;
-        if (this.isInput) conn = new Connection(Dot.selectedDot, this);
-        else conn = new Connection(this, Dot.selectedDot);
-        Connector.addConnection(conn);
+        if (this.isInput) Connector.addConnection(Dot.selectedDot, this);
+        else Connector.addConnection(this, Dot.selectedDot);
         Dot.selectedDot = null;
         return;
       }
@@ -276,6 +278,14 @@ export class Box {
     else this.setName("");
   }
 
+
+  //TODO
+  destroy() {
+    for (const d of this.dots) {
+      d.removeAllConnections();
+    }
+  }
+
   setX(x: number) {
     if (typeof x != "number") throw TypeError();
     this.x = boundToRange(x, 0, globalThis.gridWidth - this.width);
@@ -305,6 +315,9 @@ export class Box {
     this.ele.draggable = true;
     this.ele.addEventListener("dragstart", this.handleDragStart(this));
     this.ele.addEventListener("dragend", this.handleDragEnd(this));
+    this.ele.addEventListener("contextmenu", () => {
+      this.destroy();
+    })
     parentElement.appendChild(this.ele);
   }
 
