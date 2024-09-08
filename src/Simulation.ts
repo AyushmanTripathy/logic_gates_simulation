@@ -113,6 +113,7 @@ export default class Simulation {
   }
   cycle() {
     for (const gate of this.gates) gate.computeOutput();
+    Connector.reDraw();
   }
   updateInput(index: number, value: boolean) {
     if (index < 0 || this.inputCount <= index)

@@ -9,15 +9,11 @@ interface Connections {
   [key: string]: Connection;
 }
 
-export class ColorGenrator {
-  static colors = ["aqua", "lime", "purple", "fuchsia", "teal"];
-  static colorIndex = 0;
-  static getColor() {
-    ColorGenrator.colorIndex =
-      (ColorGenrator.colorIndex + 1) % ColorGenrator.colors.length;
-    return ColorGenrator.colors[ColorGenrator.colorIndex];
-  }
-}
+const colors = {
+  dotNotConnected: "black",
+  dotConnectedLow: "grey",
+  dotConnectedHigh: "red",
+};
 
 function boundToRange(x: number, min: number, max: number): number {
   if (x < min) return min;
@@ -54,16 +50,15 @@ export class Connector {
 
   static addConnection(conn: Connection) {
     if (!this.hasInstance) throw "no Connector instance";
-    if (conn.dots[0].isInput == conn.dots[1].isInput) return;
 
-    // if is output dot and already connected with other
-    const checkOutputCondition = (d: Dot) =>
-      d.isInput && !!Object.keys(d.connections).length;
-    if (checkOutputCondition(conn.dots[0])) return;
-    if (checkOutputCondition(conn.dots[1])) return;
+    // if is input dot and already connected with other
+    if (Object.keys(conn.to.connections).length) {
+      conn.destroy();
+      throw "input dot already connected";
+    }
 
-    conn.dots[0].connect(conn.dots[1], conn);
-    conn.dots[1].connect(conn.dots[0], conn);
+    conn.from.connect(conn.to, conn);
+    conn.to.connect(conn.from, conn);
 
     this.instance.connections[conn.hash] = conn;
     this.instance.drawConnections();
@@ -88,13 +83,15 @@ export class Connector {
     this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
     for (const connHash in this.connections) {
       const conn = this.connections[connHash];
-      const p = this.getPos(conn.dots[0].ele);
-      const q = this.getPos(conn.dots[1].ele);
-      this.drawConnectionLine(p, q, conn.color);
+      const p = this.getPos(conn.from.ele);
+      const q = this.getPos(conn.to.ele);
+      this.drawConnectionLine(p, q, conn.isHigh);
     }
   }
-  drawConnectionLine(p: Point, q: Point, color: string) {
-    this.ctx.strokeStyle = color;
+  drawConnectionLine(p: Point, q: Point, isHigh: boolean) {
+    this.ctx.strokeStyle = isHigh
+      ? colors.dotConnectedHigh
+      : colors.dotConnectedLow;
     this.ctx.lineWidth = 5;
     this.ctx.beginPath();
     this.ctx.moveTo(p.x, p.y);
@@ -105,18 +102,36 @@ export class Connector {
 
 class Connection {
   hash: string;
-  dots: Dot[];
-  color: string;
-  constructor(d1: Dot, d2: Dot) {
-    if (d1.hashId == d2.hashId) throw "Cannot create same dots";
+  from: Dot;
+  to: Dot;
+  isHigh: boolean;
+
+  constructor(from: Dot, to: Dot) {
+    if (from.hashId == to.hashId) throw "Cannot create same dots";
     this.hash = randomHash();
-    this.dots = [d1, d2];
-    this.color = d1.isInput ? d2.connectionColor : d1.connectionColor;
+    if (from.isInput) throw "from cannot be input dot";
+    else this.from = from;
+    if (to.isInput) this.to = to;
+    else throw "to cannot be output dot";
+    this.isHigh = false;
+
+    from.parentBox.gate.setOutputCallback(
+      from.index,
+      this.hash,
+      (level: boolean) => this.setLevel(level)
+    );
+  }
+
+  setLevel(isHigh: boolean) {
+    this.isHigh = isHigh;
+    this.from.setLevel(isHigh);
+    this.to.setLevel(isHigh);
   }
 
   destroy() {
-    this.dots[0].removeConnection(this.hash);
-    this.dots[1].removeConnection(this.hash);
+    this.from.removeConnection(this.hash);
+    this.from.parentBox.gate.removeOutputCallback(this.from.index, this.hash);
+    this.to.removeConnection(this.hash);
     Connector.removeConnection(this.hash);
   }
 }
@@ -129,7 +144,6 @@ class Dot {
   connections: Connections;
   index: number;
   hashId: string;
-  connectionColor: string;
 
   constructor(index: number, isInput: boolean, parentBox: Box) {
     this.isInput = isInput;
@@ -137,17 +151,17 @@ class Dot {
     this.ele = document.createElement("div");
     this.ele.classList.add("dot");
     this.connections = {};
-    this.connectionColor = isInput ? "black" : ColorGenrator.getColor();
     this.index = index;
 
-    this.ele.style.backgroundColor = this.connectionColor;
+    this.ele.style.backgroundColor = colors.dotNotConnected;
     this.hashId = randomHash();
   }
 
   connect(d: Dot, conn: Connection) {
+    this.ele.style.backgroundColor = colors.dotConnectedLow;
     if (this.isInput) {
-      this.ele.style.backgroundColor = d.connectionColor;
-      this.parentBox.gate.setInput(this.index, d.parentBox.gate, d.index);
+      if (!this.parentBox.gate.setInput(this.index, d.parentBox.gate, d.index))
+        console.log("Connection rejeted by gate");
     }
     this.connections[conn.hash] = conn;
   }
@@ -157,13 +171,13 @@ class Dot {
     if (this.isInput) {
       this.parentBox.gate.removeInput(this.index);
     }
-    this.ele.style.backgroundColor = this.connectionColor;
+    this.ele.style.backgroundColor = colors.dotNotConnected;
   }
 
   removeAllConnections() {
     const connHashes = Object.keys(this.connections);
     for (const connHash of connHashes) this.connections[connHash].destroy();
-    this.ele.style.backgroundColor = this.connectionColor;
+    this.ele.style.backgroundColor = colors.dotNotConnected;
   }
 
   render(parentElement: HTMLElement) {
@@ -177,7 +191,9 @@ class Dot {
 
       // connecting both
       if (Dot.selectedDot && Dot.selectedDot.hashId != this.hashId) {
-        const conn = new Connection(this, Dot.selectedDot);
+        let conn: Connection;
+        if (this.isInput) conn = new Connection(Dot.selectedDot, this);
+        else conn = new Connection(this, Dot.selectedDot);
         Connector.addConnection(conn);
         Dot.selectedDot = null;
         return;
@@ -185,6 +201,12 @@ class Dot {
 
       Dot.selectedDot = this;
     });
+  }
+
+  setLevel(isHigh: boolean) {
+    this.ele.style.backgroundColor = isHigh
+      ? colors.dotConnectedHigh
+      : colors.dotConnectedLow;
   }
 }
 

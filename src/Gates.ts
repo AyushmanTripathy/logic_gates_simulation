@@ -14,17 +14,17 @@ export const availableGates: LogicGateInfoMap = {
   AND: {
     in: 2,
     out: 1,
-    logic: (ins) => ins[0] && ins[1]
+    logic: (ins) => ins[0] && ins[1],
   },
   OR: {
     in: 2,
     out: 1,
-    logic: (ins) => ins[0] || ins[1]
+    logic: (ins) => ins[0] || ins[1],
   },
   XOR: {
     in: 2,
     out: 1,
-    logic: (ins) => !(ins[0] == ins[1])
+    logic: (ins) => !(ins[0] == ins[1]),
   },
   BUFFER: {
     in: 1,
@@ -46,6 +46,7 @@ export class Gate {
   outCount: number;
   outLogicFuncs: LogicGateFunction[];
   outputCaches: boolean[];
+  outputCallbacks: (Object | null)[];
   constructor(
     name: string,
     inCount: number,
@@ -58,6 +59,8 @@ export class Gate {
     this.outCount = outLogicFuncs.length;
     this.outLogicFuncs = outLogicFuncs;
     this.outputCaches = new Array(this.outCount).fill(false);
+    this.outputCallbacks = [];
+    for (let i = 0; i < this.outCount; i++) this.outputCallbacks.push({});
   }
 
   fetchAllInputs(): boolean[] {
@@ -86,8 +89,29 @@ export class Gate {
   computeOutput() {
     const inputValues = this.fetchAllInputs();
     for (let i = 0; i < this.outCount; i++) {
-      this.outputCaches[i] = this.outLogicFuncs[i](inputValues);
+      const val = this.outLogicFuncs[i](inputValues);
+      for (const hash in this.outputCallbacks[i])
+        this.outputCallbacks[i][hash](val);
+      this.outputCaches[i] = val;
     }
+  }
+
+  setOutputCallback(
+    index: number,
+    hash: string,
+    callback: (arg0: boolean) => void
+  ) {
+    if (index < 0 || index >= this.outCount)
+      throw "cannot setOutputCallback for " + index;
+    this.outputCallbacks[index][hash] = callback;
+  }
+
+  removeOutputCallback(index: number, hash: string) {
+    if (index < 0 || index >= this.outCount)
+      throw "cannot removeOutputCallback for " + index;
+    if (this.outputCallbacks[index][hash])
+      delete this.outputCallbacks[index][hash];
+    else throw "cannot removeOutputCallback for hash " + hash;
   }
 
   setInput(asIndex: number, inputGate: Gate, gateIndex: number): boolean {
