@@ -37,22 +37,33 @@ class PopupMenu {
 
 export default class Simulation {
   mainEle: HTMLElement;
+  canvasEle: HTMLCanvasElement;
+  height: number;
+  width: number;
+
   inputValues: boolean[];
   inputCount: number;
   outputCount: number;
   outputBufferGate: Gate;
   gates: Gate[];
+  boxes: Box[];
+
   constructor(
     inputValuesArr: boolean[],
     outputCount: number,
     mainEle: HTMLElement,
     canvasEle: HTMLCanvasElement
   ) {
-    new Connector(mainEle, canvasEle);
-    globalThis.gridHeight = mainEle.clientHeight;
-    globalThis.gridWidth = mainEle.clientWidth;
-
     this.mainEle = mainEle;
+    this.canvasEle = canvasEle;
+    this.boxes = [];
+    this.gates = [];
+
+    new Connector(mainEle, canvasEle);
+    this.updateDimensions();
+    new ResizeObserver(() => {
+      this.updateDimensions();
+    }).observe(mainEle);
 
     this.inputValues = [...inputValuesArr];
     this.inputCount = inputValuesArr.length;
@@ -63,27 +74,24 @@ export default class Simulation {
       inputBufferFuncs.push(fixedBuffer(this.inputValues, i));
     }
 
-    const mainEleRect = mainEle.getBoundingClientRect();
-    const inputBufferGate = new Gate("INPUT BUFFER", 0, inputBufferFuncs);
-    const inputBox = new Box(
+    this.addGate(
+      "INPUT",
       0,
-      mainEleRect.height / 2 - 100,
-      50,
+      this.height / 2 - 100,
       200,
-      inputBufferGate
-    );
-    this.outputBufferGate = new Gate("OUTPUT BUFFER", outputCount, []);
-    const outputBox = new Box(
-      mainEleRect.width,
-      mainEleRect.height / 2 - 100,
       50,
-      200,
-      this.outputBufferGate
+      0,
+      inputBufferFuncs
     );
-    this.gates = [inputBufferGate, this.outputBufferGate];
-
-    inputBox.render(mainEle);
-    outputBox.render(mainEle);
+    this.outputBufferGate = this.addGate(
+      "OUTPUT",
+      this.width,
+      this.height / 2 - 100,
+      200,
+      50,
+      outputCount,
+      []
+    );
 
     mainEle.addEventListener("contextmenu", (e) => {
       // ignore bubbled events
@@ -93,23 +101,44 @@ export default class Simulation {
       const x = e.offsetX,
         y = e.offsetY;
       new PopupMenu(x, y, Object.keys(availableGates), (key: string) => {
-        this.addGate(key, x, y, availableGates[key].in, [
+        this.addGate(key, x, y, 100, 150, availableGates[key].in, [
           availableGates[key].logic,
         ]);
       }).render(this.mainEle);
     });
   }
+  destroy() {
+    Connector.destroy();
+  }
+
+  updateDimensions() {
+    this.height = this.mainEle.clientHeight;
+    this.width = this.mainEle.clientWidth;
+
+    for (let i = 0; i < this.boxes.length; i++)
+      this.boxes[i].updateDimensions(this.height, this.width);
+
+    this.canvasEle.height = this.height;
+    this.canvasEle.width = this.width;
+
+    Connector.reDraw();
+  }
+
   addGate(
     name: string,
     x: number,
     y: number,
+    w: number,
+    h: number,
     inCount: number,
     outLogicFuncs: LogicGateFunction[]
-  ) {
+  ): Gate {
     const gate = new Gate(name, inCount, outLogicFuncs);
     this.gates.push(gate);
-    const b = new Box(x, y, 150, 100, gate);
+    const b = new Box(x, y, h, w, this.height, this.width, gate);
+    this.boxes.push(b);
     b.render(this.mainEle);
+    return gate;
   }
   cycle() {
     for (const gate of this.gates) gate.computeOutput();

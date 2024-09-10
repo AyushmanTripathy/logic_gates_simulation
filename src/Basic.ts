@@ -1,4 +1,5 @@
 import { Gate } from "./Gates.js";
+import Simulation from "./Simulation.js";
 
 interface Point {
   x: number;
@@ -33,9 +34,11 @@ export class Connector {
   static hasInstance = false;
   static instance: Connector;
 
-  boxContainerRect: DOMRect;
+  boxContainerEle: HTMLElement;
+  boxContainerRect: DOMRect | null = null;
   connections: Connections;
   ctx: CanvasRenderingContext2D;
+
   constructor(boxContainerEle: HTMLElement, canvasEle: HTMLCanvasElement) {
     if (Connector.hasInstance) throw "Connector instance present";
     Connector.hasInstance = true;
@@ -43,12 +46,16 @@ export class Connector {
     if (canvasCtx instanceof CanvasRenderingContext2D) this.ctx = canvasCtx;
     else throw "Canvas getContext gives null";
 
-    this.boxContainerRect = boxContainerEle.getBoundingClientRect();
+    this.boxContainerEle = boxContainerEle;
     this.connections = {};
     Connector.instance = this;
   }
 
-  static addConnection(from: Dot, to:Dot): Connection {
+  static destroy() {
+    Connector.hasInstance = false;
+  }
+
+  static addConnection(from: Dot, to: Dot): Connection {
     if (!this.hasInstance) throw "no Connector instance";
 
     if (from.hashId == to.hashId) throw "Cannot create same dots";
@@ -56,10 +63,7 @@ export class Connector {
     if (!to.isInput) throw "to cannot be output dot";
 
     // if is input dot and already connected with other
-    if (Object.keys(to.connections).length) {
-      console.log("input dot already connected");
-      to.removeAllConnections();
-    }
+    if (Object.keys(to.connections).length) to.removeAllConnections();
 
     const conn = new Connection(from, to);
     from.connect(to, conn);
@@ -87,6 +91,7 @@ export class Connector {
     };
   }
   drawConnections() {
+    this.boxContainerRect = this.boxContainerEle.getBoundingClientRect();
     this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
     for (const connHash in this.connections) {
       const conn = this.connections[connHash];
@@ -188,6 +193,7 @@ class Dot {
     parentElement.appendChild(this.ele);
     this.ele.addEventListener("contextmenu", (e) => {
       e.preventDefault();
+      e.stopPropagation();
       this.removeAllConnections();
     });
     this.ele.addEventListener("click", (e) => {
@@ -233,6 +239,9 @@ class DotContainer {
   }
 }
 export class Box {
+  simulationHeight: number;
+  simulationWidth: number;
+
   x: number;
   y: number;
   height: number;
@@ -247,9 +256,19 @@ export class Box {
   outputContainer: DotContainer;
   nameEle: HTMLElement;
 
-  constructor(x: number, y: number, w: number, h: number, gate: Gate) {
+  constructor(
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    sh: number,
+    sw: number,
+    gate: Gate
+  ) {
     this.gate = gate;
 
+    this.simulationHeight = sh;
+    this.simulationWidth = sw;
     this.ele = document.createElement("div");
     this.ele.classList.add("box");
 
@@ -278,34 +297,37 @@ export class Box {
     else this.setName("");
   }
 
-
   //TODO
   destroy() {
     for (const d of this.dots) {
       d.removeAllConnections();
     }
+    this.ele.remove();
+  }
+
+  updateDimensions(h: number, w: number) {
+    this.simulationWidth = w;
+    this.simulationHeight = h;
+    this.setX(this.x);
+    this.setY(this.y);
   }
 
   setX(x: number) {
-    if (typeof x != "number") throw TypeError();
-    this.x = boundToRange(x, 0, globalThis.gridWidth - this.width);
+    this.x = boundToRange(x, 0, this.simulationWidth - this.width);
     this.ele.style.left = this.x + "px";
   }
   setY(y: number) {
-    if (typeof y != "number") throw TypeError();
-    this.y = boundToRange(y, 0, globalThis.gridHeight - this.height);
+    this.y = boundToRange(y, 0, this.simulationHeight - this.height);
     this.ele.style.top = this.y + "px";
   }
   setName(name: string) {
     this.nameEle.innerText = name;
   }
   setHeight(h: number) {
-    if (typeof h != "number") throw TypeError();
     this.height = h;
     this.ele.style.height = this.height + "px";
   }
   setWidth(w: number) {
-    if (typeof w != "number") throw TypeError();
     this.width = w;
     this.ele.style.width = this.width + "px";
   }
@@ -315,9 +337,11 @@ export class Box {
     this.ele.draggable = true;
     this.ele.addEventListener("dragstart", this.handleDragStart(this));
     this.ele.addEventListener("dragend", this.handleDragEnd(this));
-    this.ele.addEventListener("contextmenu", () => {
+    this.ele.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       this.destroy();
-    })
+    });
     parentElement.appendChild(this.ele);
   }
 
