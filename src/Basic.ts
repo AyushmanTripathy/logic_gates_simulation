@@ -1,5 +1,5 @@
 import { Gate } from "./Gates.js";
-import Simulation from "./Simulation.js";
+import { colors } from "./config.js";
 
 interface Point {
   x: number;
@@ -9,12 +9,6 @@ interface Point {
 interface Connections {
   [key: string]: Connection;
 }
-
-const colors = {
-  dotNotConnected: "black",
-  dotConnectedLow: "grey",
-  dotConnectedHigh: "red",
-};
 
 function boundToRange(x: number, min: number, max: number): number {
   if (x < min) return min;
@@ -280,6 +274,7 @@ export class Box {
     } else this.inputContainer = null;
 
     this.nameEle = document.createElement("h1");
+    if (gate.inCount && gate.outCount) this.nameEle.innerText = gate.name;
     this.ele.appendChild(this.nameEle);
 
     if (gate.outCount) {
@@ -293,11 +288,8 @@ export class Box {
 
     this.setX(x);
     this.setY(y);
-    if (gate.inCount && gate.outCount) this.setName(gate.name);
-    else this.setName("");
   }
 
-  //TODO
   destroy() {
     for (const d of this.dots) {
       d.removeAllConnections();
@@ -319,9 +311,6 @@ export class Box {
   setY(y: number) {
     this.y = boundToRange(y, 0, this.simulationHeight - this.height);
     this.ele.style.top = this.y + "px";
-  }
-  setName(name: string) {
-    this.nameEle.innerText = name;
   }
   setHeight(h: number) {
     this.height = h;

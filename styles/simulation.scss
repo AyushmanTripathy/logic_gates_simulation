@@ -1,16 +1,41 @@
-@import "./global.scss"; 
+@import "./global.scss";
 
-.simulationContainer {
+$simHeight: 90vh;
+
+@mixin dotContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+}
+
+#simulationContainer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  height: $simHeight;
+  width: 100vw;
+
+  background: red;
+}
+
+.IOContainer {
+  @include dotContainer;
+  background: blue;
+}
+
+#gameContainer {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 90vh;
-  width: 90vw;
 
   background: transparent;
-  padding: 0;
-  margin: 0;
 }
 #gameCanvas {
   background: black;
@@ -20,8 +45,8 @@
   position: absolute;
   background: transparent;
   color: white;
-  height: 80%;
-  width: 80%;
+  height: $simHeight - 10vh;
+  width: 90vw;
 }
 .box {
   display: flex;
@@ -43,11 +68,8 @@
   border-radius: 50%;
   background: black;
 }
+
 .dotContainer {
+  @include dotContainer;
   height: 100%;
-  width: 20px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-evenly;
-  align-items: center;
 }

@@ -1,5 +1,6 @@
 import { Box, Connector } from "./Basic.js";
 import { Gate, LogicGateFunction, availableGates } from "./Gates.js";
+import { dimensions } from "./config.js";
 
 const fixedBuffer = (a: boolean[], i: number) => {
   return () => a[i];
@@ -77,18 +78,18 @@ export default class Simulation {
     this.addGate(
       "INPUT",
       0,
-      this.height / 2 - 100,
-      200,
-      50,
+      this.height / 2 - dimensions.input.height / 2,
+      dimensions.input.height,
+      dimensions.input.width,
       0,
       inputBufferFuncs
     );
     this.outputBufferGate = this.addGate(
       "OUTPUT",
       this.width,
-      this.height / 2 - 100,
-      200,
-      50,
+      this.height / 2 - dimensions.output.height / 2,
+      dimensions.output.height,
+      dimensions.output.width,
       outputCount,
       []
     );

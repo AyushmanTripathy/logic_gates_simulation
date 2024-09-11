@@ -6,6 +6,6 @@
 [x] Makes it work
 [x] Fix loops
 [x] resize
+[x] IO system
 
-[ ] IO system
-[ ] Integrating with frontend framework
+[ ] Fix: order of gates (XOR) 

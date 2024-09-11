@@ -1,24 +1,19 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title></title>
-  <link rel="stylesheet" href="/compiled/output.css">
-</head>
-<body>
-  <main class="simulationContainer">
-    <canvas id="gameCanvas" class="section"></canvas>
-    <section class="section" id="gameMain"></section>
-  </main>
-  <script type="module">
-    import Simulation from "/compiled/js/Simulation.js";
-    const ele = document.getElementById("gameMain");
-    const canvas = document.getElementById("gameCanvas");
-    const sim = new Simulation([true, false], 2, ele, canvas);
-    setInterval(() => {
-      sim.cycle();
-      console.log(sim.fetchOutputs()) 
-    }, 1000);
-  </script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <title></title>
+    <link rel="stylesheet" href="/compiled/output.css" />
+  </head>
+  <body>
+    <main id="simulationContainer">
+      <section class="IOContainer" id="inputIOContainer"></section>
+      <section id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        <section id="gameMain"></section>
+      </section>
+      <section class="IOContainer" id="outputIOContainer"></section>
+    </main>
+    <script src="/compiled/js/init.js" type="module"> </script>
+  </body>
 </html>
