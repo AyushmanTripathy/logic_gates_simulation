@@ -1,0 +1,2 @@
+./styles/simulation.scss:./compiled/output.css
+./styles/global.scss:./compiled/global.css

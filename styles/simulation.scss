@@ -1,0 +1,53 @@
+@import "./global.scss"; 
+
+.simulationContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 90vh;
+  width: 90vw;
+
+  background: transparent;
+  padding: 0;
+  margin: 0;
+}
+#gameCanvas {
+  background: black;
+  border: 5px solid yellow;
+}
+#gameMain {
+  position: absolute;
+  background: transparent;
+  color: white;
+  height: 80%;
+  width: 80%;
+}
+.box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: absolute;
+  text-align: center;
+  background: pink;
+  color: black;
+}
+.popup {
+  position: absolute;
+  border: 1px solid white;
+  padding: 10px;
+}
+.dot {
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: black;
+}
+.dotContainer {
+  height: 100%;
+  width: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+}

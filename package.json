@@ -1,0 +1,17 @@
+{
+  "name": "logic_gates_simulation",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev:css": "sass --watch $(cat sass_inputs.txt)",
+    "dev:ts": "tsc --watch",
+    "build": "tsc && sass $(cat sass_inputs.txt)"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "sass": "^1.78.0",
+    "typescript": "^5.6.2"
+  }
+}

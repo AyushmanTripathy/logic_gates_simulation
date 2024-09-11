@@ -3,76 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <title></title>
-  <style>
-    body {
-      background: black;
-    }
-    .container {
-      position: absolute;
-      top: 0;
-      left: 0;
-
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      width: 100vw;
-
-      background: transparent;
-      padding: 0;
-      margin: 0;
-    }
-    #gameCanvas {
-      background: black;
-      border: 1px solid yellow;
-    }
-    #gameMain {
-      position: absolute;
-      background: transparent;
-      color: white;
-      height: 80vh;
-      width: 80vw;
-    }
-    .box {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: absolute;
-      text-align: center;
-      background: pink;
-      color: black;
-    }
-    .popup {
-      position: absolute;
-      border: 1px solid white;
-      padding: 10px;
-    }
-    .dot {
-      height: 20px;
-      width: 20px;
-      border-radius: 50%;
-      background: black;
-    }
-    .dotContainer {
-      height: 100%;
-      width: 20px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-evenly;
-      align-items: center;
-    }
-  </style>
+  <link rel="stylesheet" href="/compiled/output.css">
 </head>
 <body>
-  <main class="container">
+  <main class="simulationContainer">
     <canvas id="gameCanvas" class="section"></canvas>
-  </main>
-  <main class="container">
     <section class="section" id="gameMain"></section>
   </main>
   <script type="module">
-    import Simulation from "/js/Simulation.js";
+    import Simulation from "/compiled/js/Simulation.js";
     const ele = document.getElementById("gameMain");
     const canvas = document.getElementById("gameCanvas");
     const sim = new Simulation([true, false], 2, ele, canvas);
