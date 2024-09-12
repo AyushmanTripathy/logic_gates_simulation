@@ -1,6 +1,13 @@
 @import "./global.scss";
+@import "./mixins.scss";
 
-$simHeight: 90vh;
+:root {
+  --simHeight: 60vh;
+}
+
+$simHeight: var(--simHeight);
+$simWidth: 90vw;
+$simBtnsContainerHeight: 5vh;
 
 @mixin dotContainer {
   display: flex;
@@ -9,17 +16,25 @@ $simHeight: 90vh;
   justify-content: space-evenly;
 }
 
-#simulationContainer {
+#simulationMain {
   position: absolute;
   bottom: 0;
   left: 0;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
   height: $simHeight;
   width: 100vw;
+
+  @include flex(column);
+  @include flex-center;
+}
+
+#simBtnsContainer {
+  width: $simWidth;
+  height: $simBtnsContainerHeight - 1vh;
+}
+
+#simulationContainer {
+  @include flex(row);
+  @include flex-center;
 
   background: red;
 }
@@ -30,10 +45,8 @@ $simHeight: 90vh;
 }
 
 #gameContainer {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  @include flex(center);
+  @include flex-center;
 
   background: transparent;
 }
@@ -45,8 +58,8 @@ $simHeight: 90vh;
   position: absolute;
   background: transparent;
   color: white;
-  height: $simHeight - 10vh;
-  width: 90vw;
+  height: calc($simHeight - $simBtnsContainerHeight);
+  width: $simWidth;
 }
 .box {
   display: flex;
@@ -63,8 +76,7 @@ $simHeight: 90vh;
   padding: 10px;
 }
 .dot {
-  height: 20px;
-  width: 20px;
+  @include dimensions(20px, 20px);
   border-radius: 50%;
   background: black;
 }

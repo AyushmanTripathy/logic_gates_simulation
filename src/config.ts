@@ -1,3 +1,7 @@
+export const config = {
+  cycleInterval: 200
+}
+
 export const colors = {
   dotNotConnected: "black",
   dotConnectedLow: "grey",
