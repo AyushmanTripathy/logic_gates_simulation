@@ -1,0 +1,25 @@
+@import "./global.scss";
+
+$navbarColor: blue;
+/* don't forget to update JS */
+$navbarHeight: 50px;
+
+#navbar {
+  @include sans;
+  @include fixed(0, 0);
+  @include flex(row);
+  @include dimensions($navbarHeight, calc(100vw - 100px));
+
+  z-index: 100;
+
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 50px;
+  padding-right: 50px;
+  background: $navbarColor;
+
+  a {
+    color: black;
+    text-decoration: none;
+  }
+}

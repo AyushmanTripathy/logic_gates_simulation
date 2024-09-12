@@ -1,5 +1,6 @@
 @import "./global.scss";
 @import "./mixins.scss";
+@import "./navbar.scss";
 
 :root {
   --simHeight: 60vh;
@@ -9,22 +10,33 @@ $simHeight: var(--simHeight);
 $simWidth: 90vw;
 $simBtnsContainerHeight: 5vh;
 
-@mixin dotContainer {
+body {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-evenly;
+  justify-content: center;
+}
+
+#descriptionMain {
+  @include no-padding-margin;
+
+  padding-top: $navbarHeight;
+
+  min-height: calc(100vh - $navbarHeight);
+  width: 90vw;
+
+  overflow: clip;
 }
 
 #simulationMain {
-  position: absolute;
+  position: fixed;
   bottom: 0;
   left: 0;
   height: $simHeight;
   width: 100vw;
 
+  z-index: 10;
   @include flex(column);
   @include flex-center;
+  background: purple;
 }
 
 #simBtnsContainer {
@@ -37,11 +49,6 @@ $simBtnsContainerHeight: 5vh;
   @include flex-center;
 
   background: red;
-}
-
-.IOContainer {
-  @include dotContainer;
-  background: blue;
 }
 
 #gameContainer {
@@ -79,6 +86,18 @@ $simBtnsContainerHeight: 5vh;
   @include dimensions(20px, 20px);
   border-radius: 50%;
   background: black;
+}
+
+@mixin dotContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+}
+
+.IOContainer {
+  @include dotContainer;
+  background: blue;
 }
 
 .dotContainer {
