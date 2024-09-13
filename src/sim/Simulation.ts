@@ -1,6 +1,6 @@
-import { Box, Connector } from "./Basic.js";
-import { Gate, LogicGateFunction, availableGates } from "./Gates.js";
-import { dimensions } from "./config.js";
+import { Box, Connector } from "./Basic";
+import { Gate, LogicGateFunction, availableGates } from "./Gates";
+import { dimensions } from "./config";
 
 const fixedBuffer = (a: boolean[], i: number) => {
   return () => a[i];

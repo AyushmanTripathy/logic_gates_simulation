@@ -1,5 +1,5 @@
-import { Gate } from "./Gates.js";
-import { colors } from "./config.js";
+import { Gate } from "./Gates";
+import { colors } from "./config";
 
 interface Point {
   x: number;

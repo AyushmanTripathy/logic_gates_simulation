@@ -1,6 +1,6 @@
-import Simulation from "./Simulation.js";
-import { config } from "./config.js";
-import { InputIOContainer, OutputIOContainer } from "./IOContainer.js";
+import Simulation from "./Simulation";
+import { config } from "./config";
+import { InputIOContainer, OutputIOContainer } from "./IOContainer";
 
 interface LevelDetails {
   inCount: number,
