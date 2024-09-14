@@ -1,39 +1,10 @@
 import Simulation from "./Simulation";
 import { config } from "../config";
+import { select } from "../utils";
 import { InputIOContainer, OutputIOContainer } from "./IOContainer";
+import { Level } from "../units";
 
-interface LevelDetails {
-  inCount: number,
-  outCount: number,
-  title: string,
-  description: string,
-  table: {
-    labels: string[],
-    rows: number[][]
-  }
-}
-
-const level: LevelDetails = {
-  inCount: 3,
-  outCount: 2,
-  title: "NAND Madness",
-  description: "random description to be here, too boring to read anyways",
-  table: {
-    labels: ["A", "B", "Y"],
-    rows: [
-      [0, 0, 1],
-      [0, 1, 1],
-      [1, 0, 1],
-      [1, 1, 0],
-    ],
-  },
-};
-
-function select<T extends Element = HTMLElement>(query: string): T {
-  const ele = document.querySelector<T>(query);
-  if (!ele) throw "element not found for " + query;
-  return ele;
-}
+import { level } from "../levels/1";
 
 const inputIOValues = new Array(level.inCount).fill(false);
 const ele = select("#gameMain");
@@ -77,7 +48,7 @@ function addSimBtnsHandlers(
 addSimBtnsHandlers(select("#simCollapseBtn"), select("#simExpandBtn"));
 
 // DESCRIPTION
-function hydrateArticle(article: HTMLElement, details: LevelDetails) {
+function hydrateArticle(article: HTMLElement, details: Level) {
   const title = document.createElement("h2");
   title.innerHTML = details.title;
   const desc = document.createElement("p");

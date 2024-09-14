@@ -8,4 +8,8 @@
 [x] resize
 [x] IO system
 
+[ ] How to pass units infos
+[ ] write json for levels
+[ ] Testing scirpt for json
+
 [ ] Fix: order of gates (XOR) 
