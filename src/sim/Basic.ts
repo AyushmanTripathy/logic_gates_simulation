@@ -1,5 +1,5 @@
 import { Gate } from "./Gates";
-import { colors } from "./config";
+import { colors } from "../config";
 
 interface Point {
   x: number;

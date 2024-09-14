@@ -1,5 +1,5 @@
 import Simulation from "./Simulation";
-import { config } from "./config";
+import { config } from "../config";
 import { InputIOContainer, OutputIOContainer } from "./IOContainer";
 
 interface LevelDetails {
@@ -55,6 +55,7 @@ setInterval(() => {
 }, config.cycleInterval);
 
 // BUTTONS
+document.title = level.title;
 const cssRoot = select<HTMLElement>(":root");
 
 function addSimBtnsHandlers(

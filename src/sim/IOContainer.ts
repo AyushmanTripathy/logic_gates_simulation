@@ -1,4 +1,4 @@
-import { colors, dimensions } from "./config";
+import { colors, dimensions } from "../config";
 
 function createIODot(): HTMLElement {
   const dot = document.createElement("div");

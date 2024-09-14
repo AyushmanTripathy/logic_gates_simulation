@@ -1,5 +1,6 @@
 export const config = {
-  cycleInterval: 200
+  appName: "Logicx",
+  cycleInterval: 200,
 }
 
 export const colors = {

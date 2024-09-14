@@ -1,2 +1,3 @@
-./styles/simulation.scss:./public/compiled/output.css
+./styles/simulation.scss:./public/compiled/sim.css
+./styles/home.scss:./public/compiled/home.css
 ./styles/global.scss:./public/compiled/global.css

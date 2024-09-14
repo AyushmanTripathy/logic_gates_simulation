@@ -2,7 +2,6 @@
   "include": ["src"],
   "compilerOptions": {
     "target": "esnext",
-    "removeComments": true,
-    "outDir": "compiled/js"
+    "removeComments": true
   }
 }
