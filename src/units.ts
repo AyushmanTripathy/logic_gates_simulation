@@ -12,9 +12,8 @@ export interface Level {
 }
 
 export interface Unit {
-  id: number,
   title: string,
-  levelsCount: number
+  levels: string[]
 }
 
 interface LogicGateInfo {

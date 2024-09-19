@@ -4,7 +4,34 @@ import { select } from "../utils";
 import { InputIOContainer, OutputIOContainer } from "./IOContainer";
 import { Level } from "../units";
 
-import { level } from "../levels/1";
+//document.location.href = "/";
+
+interface LevelDetails {
+  inCount: number,
+  outCount: number,
+  title: string,
+  description: string,
+  table: {
+    labels: string[],
+    rows: number[][]
+  }
+}
+
+const level: LevelDetails = {
+  inCount: 3,
+  outCount: 2,
+  title: "NAND Madness",
+  description: "random description to be here, too boring to read anyways",
+  table: {
+    labels: ["A", "B", "Y"],
+    rows: [
+      [0, 0, 1],
+      [0, 1, 1],
+      [1, 0, 1],
+      [1, 1, 0],
+    ],
+  },
+};
 
 const inputIOValues = new Array(level.inCount).fill(false);
 const ele = select("#gameMain");
@@ -57,15 +84,17 @@ function hydrateArticle(article: HTMLElement, details: Level) {
   const createRow = (arr: (string | number)[]) => {
     const row = document.createElement("tr");
     for (let i = 0; i < arr.length; i++) {
-      const cell = document.createElement(typeof arr[i] == "string" ? "th" : "td");
+      const cell = document.createElement(
+        typeof arr[i] == "string" ? "th" : "td"
+      );
       cell.innerHTML = arr[i].toString();
       row.appendChild(cell);
     }
     return row;
-  }
+  };
   table.appendChild(createRow(details.table.labels));
   for (let x = 0; x < details.table.rows.length; x++)
-    table.appendChild(createRow(details.table.rows[x]))
+    table.appendChild(createRow(details.table.rows[x]));
 
   article.appendChild(title);
   article.appendChild(desc);
