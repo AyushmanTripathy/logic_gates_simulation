@@ -1,60 +1,49 @@
 import Simulation from "./Simulation";
 import { config } from "../config";
-import { select } from "../utils";
+import { loadContent, select } from "../utils";
 import { InputIOContainer, OutputIOContainer } from "./IOContainer";
 import { Level } from "../units";
 
-//document.location.href = "/";
+const cssRoot = select<HTMLElement>(":root");
 
-interface LevelDetails {
-  inCount: number,
-  outCount: number,
-  title: string,
-  description: string,
-  table: {
-    labels: string[],
-    rows: number[][]
-  }
+init();
+
+async function init() {
+  const level: Level | false = await fetchLevel();
+  if (level === false) return window.location.href = "/";
+
+  document.title = level.title;
+
+  // Simulation
+  const cycle = createSimulation(level);
+  setInterval(cycle, config.cycleInterval);
+
+  // UI
+  addSimBtnsHandlers(select("#simCollapseBtn"), select("#simExpandBtn"));
+  hydrateArticle(select("#descriptionMain"), level);
 }
 
-const level: LevelDetails = {
-  inCount: 3,
-  outCount: 2,
-  title: "NAND Madness",
-  description: "random description to be here, too boring to read anyways",
-  table: {
-    labels: ["A", "B", "Y"],
-    rows: [
-      [0, 0, 1],
-      [0, 1, 1],
-      [1, 0, 1],
-      [1, 1, 0],
-    ],
-  },
-};
+function createSimulation(level: Level): Function {
+  const inputIOValues = new Array(level.inCount).fill(false);
+  const ele = select("#gameMain");
+  const canvas = select<HTMLCanvasElement>("#gameCanvas");
+  const sim = new Simulation(inputIOValues, level.outCount, ele, canvas);
 
-const inputIOValues = new Array(level.inCount).fill(false);
-const ele = select("#gameMain");
-const canvas = select<HTMLCanvasElement>("#gameCanvas");
-const sim = new Simulation(inputIOValues, level.outCount, ele, canvas);
-
-const inputIOContainer = select("#inputIOContainer");
-const inputs = new InputIOContainer(
-  inputIOContainer,
-  inputIOValues,
-  (i: number, v: boolean) => sim.updateInput(i, v)
-);
-const outputIOContainer = select("#outputIOContainer");
-const outputs = new OutputIOContainer(outputIOContainer, level.outCount);
-
-setInterval(() => {
-  sim.cycle();
-  outputs.update(sim.fetchOutputs());
-}, config.cycleInterval);
+  const inputIOContainer = select("#inputIOContainer");
+  const inputs = new InputIOContainer(
+    inputIOContainer,
+    inputIOValues,
+    (i: number, v: boolean) => sim.updateInput(i, v)
+  );
+  const outputIOContainer = select("#outputIOContainer");
+  const outputs = new OutputIOContainer(outputIOContainer, level.outCount);
+  return () => {
+    sim.cycle();
+    outputs.update(sim.fetchOutputs());
+  };
+}
 
 // BUTTONS
-document.title = level.title;
-const cssRoot = select<HTMLElement>(":root");
 
 function addSimBtnsHandlers(
   collapseBtn: HTMLButtonElement,
@@ -72,14 +61,13 @@ function addSimBtnsHandlers(
     expandBtn.style.display = "block";
   };
 }
-addSimBtnsHandlers(select("#simCollapseBtn"), select("#simExpandBtn"));
 
 // DESCRIPTION
-function hydrateArticle(article: HTMLElement, details: Level) {
+function hydrateArticle(article: HTMLElement, level: Level) {
   const title = document.createElement("h2");
-  title.innerHTML = details.title;
+  title.innerHTML = level.title;
   const desc = document.createElement("p");
-  desc.innerHTML = details.description;
+  desc.innerHTML = level.description;
   const table = document.createElement("table");
   const createRow = (arr: (string | number)[]) => {
     const row = document.createElement("tr");
@@ -92,12 +80,27 @@ function hydrateArticle(article: HTMLElement, details: Level) {
     }
     return row;
   };
-  table.appendChild(createRow(details.table.labels));
-  for (let x = 0; x < details.table.rows.length; x++)
-    table.appendChild(createRow(details.table.rows[x]));
+  table.appendChild(createRow(level.table.labels));
+  for (let x = 0; x < level.table.rows.length; x++)
+    table.appendChild(createRow(level.table.rows[x]));
 
   article.appendChild(title);
   article.appendChild(desc);
   article.appendChild(table);
 }
-hydrateArticle(select("#descriptionMain"), level);
+
+async function fetchLevel(): Promise<Level | false> {
+  const params = new URLSearchParams(window.location.href.split("?")[1]);
+  const ui = Number(params.get("ui"));
+  const li = Number(params.get("li"));
+  if (!(params.has("li") && params.has("ui"))) return false;
+  if (Number.isNaN(li) || Number.isNaN(ui)) return false;
+
+  try {
+    const level = await loadContent(`${ui}/${li}`);
+    console.log(level);
+    return level;
+  } catch (e) {
+    return false;
+  }
+}
