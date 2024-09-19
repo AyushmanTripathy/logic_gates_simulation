@@ -1,6 +1,6 @@
 import { Box, Connector } from "./Basic";
 import { Gate, LogicGateFunction } from "./Gates";
-import { logicGates } from "../units";
+import { logicGateFunctions } from "../units";
 import { dimensions } from "../config";
 
 const fixedBuffer = (a: boolean[], i: number) => {
@@ -102,9 +102,9 @@ export default class Simulation {
 
       const x = e.offsetX,
         y = e.offsetY;
-      new PopupMenu(x, y, Object.keys(logicGates), (key: string) => {
-        this.addGate(key, x, y, 100, 150, logicGates[key].in, [
-          logicGates[key].logic,
+      new PopupMenu(x, y, Object.keys(logicGateFunctions), (key: string) => {
+        this.addGate(key, x, y, 100, 150, logicGateFunctions[key].in, [
+          logicGateFunctions[key].logic,
         ]);
       }).render(this.mainEle);
     });

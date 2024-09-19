@@ -7,9 +7,11 @@
 [x] Fix loops
 [x] resize
 [x] IO system
+[x] Testing script for json
+[x] ProgressStorage
 
-[ ] How to pass units infos
+[ ] Testing functionality
+[ ] congrats page
+
 [ ] write json for levels
-[ ] Testing scirpt for json
-
 [ ] Fix: order of gates (XOR) 

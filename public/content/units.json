@@ -1,10 +1,6 @@
 [
   {
     "title": "Adders/Subtractors",
-    "levels": ["NAND Madness", "OP NOR", "OMG XOR"]
-  },
-  {
-    "title": "Flip Flops",
-    "levels": ["Set Reset", "Latches"]
+    "levels": ["NAND Madness"]
   }
 ]

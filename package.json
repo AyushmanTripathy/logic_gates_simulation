@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "test": "node checkJSON.js",
     "dev:css": "sass --watch $(cat sass_inputs.txt)",
     "dev:ts": "webpack --watch",
     "build": "webpack && sass $(cat sass_inputs.txt)"

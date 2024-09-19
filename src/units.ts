@@ -26,7 +26,7 @@ interface LogicGateInfoMap {
   [key: string]: LogicGateInfo;
 }
 
-export const logicGates: LogicGateInfoMap = {
+export const logicGateFunctions: LogicGateInfoMap = {
   AND: {
     in: 2,
     out: 1,
