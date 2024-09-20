@@ -1,7 +1,7 @@
 import { Box, Connector } from "./Basic";
 import { Gate, LogicGateFunction } from "./Gates";
-import { logicGateFunctions } from "../units";
 import { dimensions } from "../config";
+import { logicGateFunctions } from "../logicGatesFunction.mjs";
 
 const fixedBuffer = (a: boolean[], i: number) => {
   return () => a[i];

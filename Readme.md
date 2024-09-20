@@ -3,7 +3,7 @@
 ### TODO
 
 - [x] Gates structure
-- [x] Makes it work
+- [x] Make it work
 - [x] Fix loops
 - [x] resize
 - [x] IO system
@@ -14,4 +14,4 @@
 - [ ] congrats page
 
 - [ ] write json for levels
-- [ ] Fix: order of gates (XOR) 
+- [ ] Fix: ProgressStorage not update with content
