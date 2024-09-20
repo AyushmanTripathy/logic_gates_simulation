@@ -6,8 +6,14 @@ export interface Level {
   title: string,
   description: string,
   table: {
-    labels: string[],
-    rows: number[][]
+    labels: {
+      inputs: string[],
+      outputs: string[]
+    }
+    rows: {
+      inputs: number[][],
+      outputs: number[][]
+    }
   },
   gates: string[]
 }
@@ -15,14 +21,4 @@ export interface Level {
 export interface Unit {
   title: string,
   levels: string[]
-}
-
-interface LogicGateInfo {
-  in: number;
-  out: number;
-  logic: LogicGateFunction;
-}
-
-interface LogicGateInfoMap {
-  [key: string]: LogicGateInfo;
 }

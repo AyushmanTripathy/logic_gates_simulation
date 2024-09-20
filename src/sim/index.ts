@@ -10,12 +10,12 @@ init();
 
 async function init() {
   const level: Level | false = await fetchLevel();
-  if (level === false) return window.location.href = "/";
+  if (level === false) return (window.location.href = "/");
 
   document.title = level.title;
 
   // Simulation
-  const cycle = createSimulation(level);
+  const { cycle, test } = createSimulation(level);
   setInterval(cycle, config.cycleInterval);
 
   // UI
@@ -23,7 +23,7 @@ async function init() {
   hydrateArticle(select("#descriptionMain"), level);
 }
 
-function createSimulation(level: Level): Function {
+function createSimulation(level: Level): Object {
   const inputIOValues = new Array(level.inCount).fill(false);
   const ele = select("#gameMain");
   const canvas = select<HTMLCanvasElement>("#gameCanvas");
@@ -37,9 +37,13 @@ function createSimulation(level: Level): Function {
   );
   const outputIOContainer = select("#outputIOContainer");
   const outputs = new OutputIOContainer(outputIOContainer, level.outCount);
-  return () => {
-    sim.cycle();
-    outputs.update(sim.fetchOutputs());
+
+  return {
+    cycle: () => {
+      sim.cycle();
+      outputs.update(sim.fetchOutputs());
+    },
+    test: () => {},
   };
 }
 
@@ -80,9 +84,13 @@ function hydrateArticle(article: HTMLElement, level: Level) {
     }
     return row;
   };
-  table.appendChild(createRow(level.table.labels));
-  for (let x = 0; x < level.table.rows.length; x++)
-    table.appendChild(createRow(level.table.rows[x]));
+  table.appendChild(
+    createRow([...level.table.labels.inputs, ...level.table.labels.outputs])
+  );
+  for (let x = 0; x < level.table.rows.inputs.length; x++)
+    table.appendChild(
+      createRow([...level.table.rows.inputs[x], ...level.table.rows.outputs[x]])
+    );
 
   article.appendChild(title);
   article.appendChild(desc);
