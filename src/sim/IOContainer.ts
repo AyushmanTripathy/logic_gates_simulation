@@ -6,12 +6,14 @@ function createIODot(): HTMLElement {
   return dot;
 }
 
-const selectColor = (x: boolean) =>
-  x ? colors.dotConnectedHigh : colors.dotConnectedLow;
-
 export class InputIOContainer {
   dots: HTMLElement[] = [];
+  inputIOValues: boolean[];
+  callback: Function;
   constructor(ele: HTMLElement, inputIOValues: boolean[], callback: Function) {
+    this.inputIOValues = inputIOValues;
+    this.callback = callback;
+
     ele.style.height = dimensions.input.height + "px";
     ele.style.width = dimensions.input.width + "px";
 
@@ -19,21 +21,17 @@ export class InputIOContainer {
       const d = createIODot();
       this.dots.push(d);
       d.style.backgroundColor = colors.dotConnectedLow;
-      d.onclick = () => {
-        inputIOValues[i] = !inputIOValues[i];
-        d.style.backgroundColor = selectColor(inputIOValues[i]);
-        callback(i, inputIOValues[i]);
-      };
+      d.onclick = () => this.updateInput(i, !this.inputIOValues[i]);
       ele.appendChild(d);
     }
   }
 
-  updateColors(vals: boolean[]) {
-    if (vals.length !== this.dots.length)
-      throw "length doesnot match " + vals;
-    for (let i = 0; i < vals.length; i++) {
-      this.dots[i].style.backgroundColor = selectColor(vals[i])
-    }
+  updateInput(index: number, val: boolean) {
+    if (index < 0 || index >= this.dots.length)
+      throw "invalid index " + index;
+    this.dots[index].style.backgroundColor = val ? colors.dotConnectedHigh : colors.dotConnectedLow;
+    this.inputIOValues[index] = val;
+    this.callback(index, val);
   }
 }
 

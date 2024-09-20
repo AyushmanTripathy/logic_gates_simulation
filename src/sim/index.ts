@@ -1,8 +1,7 @@
-import Simulation from "./Simulation";
 import { config } from "../config";
 import { loadContent, select } from "../utils";
-import { InputIOContainer, OutputIOContainer } from "./IOContainer";
 import { Level } from "../units";
+import SimulationController from "./SimulationController";
 
 const cssRoot = select<HTMLElement>(":root");
 
@@ -15,36 +14,12 @@ async function init() {
   document.title = level.title;
 
   // Simulation
-  const { cycle, test } = createSimulation(level);
-  setInterval(cycle, config.cycleInterval);
+  const simController = new SimulationController(level);
+  setInterval(() => simController.cycle(), config.cycleInterval);
 
   // UI
   addSimBtnsHandlers(select("#simCollapseBtn"), select("#simExpandBtn"));
   hydrateArticle(select("#descriptionMain"), level);
-}
-
-function createSimulation(level: Level): Object {
-  const inputIOValues = new Array(level.inCount).fill(false);
-  const ele = select("#gameMain");
-  const canvas = select<HTMLCanvasElement>("#gameCanvas");
-  const sim = new Simulation(inputIOValues, level.outCount, ele, canvas);
-
-  const inputIOContainer = select("#inputIOContainer");
-  const inputs = new InputIOContainer(
-    inputIOContainer,
-    inputIOValues,
-    (i: number, v: boolean) => sim.updateInput(i, v)
-  );
-  const outputIOContainer = select("#outputIOContainer");
-  const outputs = new OutputIOContainer(outputIOContainer, level.outCount);
-
-  return {
-    cycle: () => {
-      sim.cycle();
-      outputs.update(sim.fetchOutputs());
-    },
-    test: () => {},
-  };
 }
 
 // BUTTONS
