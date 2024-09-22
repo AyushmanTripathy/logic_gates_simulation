@@ -2,12 +2,13 @@ import { config } from "../config";
 import { loadContent, select } from "../utils";
 import { Level } from "../units";
 import SimulationController from "./SimulationController";
+import Modal from "../Modal";
 
 const cssRoot = select<HTMLElement>(":root");
 
 init();
-
 async function init() {
+  const modal = new Modal(select("dialog"));
   const level: Level | false = await fetchLevel();
   if (level === false) return (window.location.href = "/");
 
@@ -18,13 +19,35 @@ async function init() {
   setInterval(() => simController.cycle(), config.cycleInterval);
 
   // UI
-  addSimBtnsHandlers(select("#simCollapseBtn"), select("#simExpandBtn"));
+  expandCollapseBtn(select("#simCollapseBtn"), select("#simExpandBtn"));
+  select("#simTestBtn").onclick = async () => {
+    const stat = await simController.test(
+      level.table.rows.inputs,
+      level.table.rows.outputs
+    );
+    if (stat)
+      modal.showMessage({
+        title: "Congrats",
+        msg: "completed",
+        btns: [
+          {
+            name: "Next Level",
+            callback: () => (window.location.href = "/"),
+          },
+        ],
+      });
+    else
+      modal.showMessage({
+        title: "Oops",
+        msg: "",
+        btns: [{ name: "Try Again", callback: () => {} }],
+      });
+  };
   hydrateArticle(select("#descriptionMain"), level);
 }
 
 // BUTTONS
-
-function addSimBtnsHandlers(
+function expandCollapseBtn(
   collapseBtn: HTMLButtonElement,
   expandBtn: HTMLButtonElement
 ) {

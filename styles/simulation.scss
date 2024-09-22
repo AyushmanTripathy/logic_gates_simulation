@@ -40,6 +40,8 @@ body {
 }
 
 #simBtnsContainer {
+  display: flex;
+  gap: 10px;
   width: $simWidth;
   height: $simBtnsContainerHeight - 1vh;
 }
