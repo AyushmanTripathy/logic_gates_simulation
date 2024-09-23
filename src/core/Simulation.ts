@@ -77,8 +77,8 @@ export default class Simulation {
     }
 
     this.addGate(
-      "INPUT",
-      0,
+      "inputGate",
+      50,
       this.height / 2 - dimensions.input.height / 2,
       dimensions.input.height,
       dimensions.input.width,
@@ -86,8 +86,8 @@ export default class Simulation {
       inputBufferFuncs
     );
     this.outputBufferGate = this.addGate(
-      "OUTPUT",
-      this.width,
+      "outputGate",
+      this.width - 100,
       this.height / 2 - dimensions.output.height / 2,
       dimensions.output.height,
       dimensions.output.width,

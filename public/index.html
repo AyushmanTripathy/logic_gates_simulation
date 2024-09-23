@@ -17,12 +17,13 @@
     </main>
     <main id="simulationMain">
       <section id="simulationContainer">
-        <section class="IOContainer" id="inputIOContainer"></section>
         <section id="gameContainer">
           <canvas id="gameCanvas"></canvas>
-          <section id="gameMain"></section>
+          <section id="gameMain">
+            <section class="IOContainer" id="outputIOContainer"></section>
+            <section class="IOContainer" id="inputIOContainer"></section>
+          </section>
         </section>
-        <section class="IOContainer" id="outputIOContainer"></section>
       </section>
     </main>
     <script src="/compiled/index-bundle.js" type="module"></script>

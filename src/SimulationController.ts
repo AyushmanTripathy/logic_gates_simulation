@@ -25,40 +25,9 @@ export default class SimulationController {
       outCount
     );
   }
-  setInput(values: boolean[]) {
-    if (values.length !== this.sim.inputCount) throw "invalid values length";
-    for (let i = 0; i < values.length; i++) {
-      this.inputContainer.updateInput(i, values[i]);
-    }
-  }
   cycle() {
     if (this.isTesting) return;
     this.sim.cycle();
     this.outputContainer.update(this.sim.fetchOutputs());
-  }
-  test(inputs: number[][], outputs: number[][]) {
-    if (inputs.length !== outputs.length) throw "invalid test";
-    this.isTesting = true;
-    console.log("testing")
-    const beforeTest = [...this.inputContainer.inputIOValues];
-    for (let i = 0; i < inputs.length; i++) {
-      this.setInput(inputs[i].map(Boolean));
-      this.sim.cycle();
-      const outs = this.sim.fetchOutputs();
-      const isEqual = outs.reduce(
-        (p, c, j) => p && c == Boolean(outputs[i][j]),
-        true
-      );
-      if (!isEqual) {
-        console.log(outs, outputs[i]);
-        this.isTesting = false;
-        console.log("complete")
-        return false;
-      }
-      //await delay(100);
-    }
-    this.setInput(beforeTest);
-    this.isTesting = false;
-    return true;
   }
 }

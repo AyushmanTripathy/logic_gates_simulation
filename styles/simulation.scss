@@ -43,8 +43,8 @@ body {
   position: absolute;
   background: transparent;
   color: white;
-  height: 95vh;
-  width: 95vw;
+  height: 100%;
+  width: 100vw;
 }
 .box {
   display: flex;
@@ -75,6 +75,9 @@ body {
 
 .IOContainer {
   @include dotContainer;
+  position: absolute;
+  top: 0;
+  left: 0;
   background: blue;
 }
 

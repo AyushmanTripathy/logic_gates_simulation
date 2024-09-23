@@ -265,6 +265,7 @@ export class Box {
     this.simulationWidth = sw;
     this.ele = document.createElement("div");
     this.ele.classList.add("box");
+    this.ele.classList.add(gate.name);
 
     this.dots = [];
     if (gate.inCount) {
