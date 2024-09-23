@@ -1,17 +1,17 @@
-import { Level } from "../units";
-import { delay, select } from "../utils";
 import { InputIOContainer, OutputIOContainer } from "./IOContainer";
-import Simulation from "./Simulation";
+import { select } from "./utils";
+import Simulation from "./core/Simulation";
 
 export default class SimulationController {
   sim: Simulation;
   inputContainer: InputIOContainer;
   outputContainer: OutputIOContainer;
-  constructor(level: Level) {
-    const inputIOValues = new Array(level.inCount).fill(false);
+  isTesting: boolean = false;
+  constructor(inCount: number, outCount: number) {
+    const inputIOValues = new Array(inCount).fill(false);
     const ele = select("#gameMain");
     const canvas = select<HTMLCanvasElement>("#gameCanvas");
-    this.sim = new Simulation(inputIOValues, level.outCount, ele, canvas);
+    this.sim = new Simulation(inputIOValues, outCount, ele, canvas);
 
     const inputIOContainer = select("#inputIOContainer");
     this.inputContainer = new InputIOContainer(
@@ -22,7 +22,7 @@ export default class SimulationController {
     const outputIOContainer = select("#outputIOContainer");
     this.outputContainer = new OutputIOContainer(
       outputIOContainer,
-      level.outCount
+      outCount
     );
   }
   setInput(values: boolean[]) {
@@ -32,21 +32,33 @@ export default class SimulationController {
     }
   }
   cycle() {
+    if (this.isTesting) return;
     this.sim.cycle();
     this.outputContainer.update(this.sim.fetchOutputs());
   }
-  async test(inputs: number[][], outputs: number[][]) {
+  test(inputs: number[][], outputs: number[][]) {
     if (inputs.length !== outputs.length) throw "invalid test";
+    this.isTesting = true;
+    console.log("testing")
     const beforeTest = [...this.inputContainer.inputIOValues];
     for (let i = 0; i < inputs.length; i++) {
       this.setInput(inputs[i].map(Boolean));
       this.sim.cycle();
-      const outs = this.sim.fetchOutputs()
-      const isEqual = outs.reduce((p, c, j) => p && c == Boolean(outputs[i][j]), true);
-      if (!isEqual) return false;
-      await delay(100);
+      const outs = this.sim.fetchOutputs();
+      const isEqual = outs.reduce(
+        (p, c, j) => p && c == Boolean(outputs[i][j]),
+        true
+      );
+      if (!isEqual) {
+        console.log(outs, outputs[i]);
+        this.isTesting = false;
+        console.log("complete")
+        return false;
+      }
+      //await delay(100);
     }
     this.setInput(beforeTest);
+    this.isTesting = false;
     return true;
   }
 }

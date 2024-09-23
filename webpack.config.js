@@ -5,8 +5,7 @@ module.exports = {
   mode: "development",
   devtool: "inline-source-map",
   entry: {
-    sim: "./src/sim/index.ts",
-    home: "./src/home/index.ts"
+    index: "./src/index.ts"
   },
   output: {
     path: path.resolve(__dirname, './public/compiled'),

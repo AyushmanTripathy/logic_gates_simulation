@@ -2,48 +2,24 @@
 @import "./navbar.scss";
 @import "./global.scss";
 
-:root {
-  --simHeight: 60vh;
-}
-
-$simHeight: var(--simHeight);
-$simWidth: 90vw;
-$simBtnsContainerHeight: 5vh;
-
 body {
   display: flex;
   justify-content: center;
 }
 
-#descriptionMain {
-  @include no-padding-margin;
-
-  padding-top: $navbarHeight;
-
-  min-height: calc(100vh - $navbarHeight);
-  width: 90vw;
-
-  overflow: clip;
-}
-
 #simulationMain {
   position: fixed;
-  bottom: 0;
+  top: 0;
   left: 0;
-  height: $simHeight;
+
+  height: calc(100vh - $navbarHeight);
   width: 100vw;
+  padding-top: $navbarHeight;
 
   z-index: 10;
   @include flex(column);
   @include flex-center;
   background: purple;
-}
-
-#simBtnsContainer {
-  display: flex;
-  gap: 10px;
-  width: $simWidth;
-  height: $simBtnsContainerHeight - 1vh;
 }
 
 #simulationContainer {
@@ -67,8 +43,8 @@ body {
   position: absolute;
   background: transparent;
   color: white;
-  height: calc($simHeight - $simBtnsContainerHeight);
-  width: $simWidth;
+  height: 95vh;
+  width: 95vw;
 }
 .box {
   display: flex;
