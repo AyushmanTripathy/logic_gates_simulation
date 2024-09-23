@@ -10,7 +10,17 @@ async function init() {
   const modal = new Modal(select("dialog"));
   document.title = config.appName;
 
-  // Simulation
   const simController = new SimulationController(3, 2);
   setInterval(() => simController.cycle(), config.cycleInterval);
+
+  const showDialogFunctions: { [key: string]: Function } = {};
+  for (const dialogId of ["helpDialog", "infoDialog"]) {
+    const dialog = select<HTMLDialogElement>("#" + dialogId);
+    dialog
+      .querySelector("button")
+      .addEventListener("click", () => dialog.close());
+    showDialogFunctions[dialogId] = () => dialog.showModal();
+    select(`#${dialogId}OpenBtn`).onclick = () => dialog.showModal();
+  }
+  showDialogFunctions["helpDialog"]();
 }

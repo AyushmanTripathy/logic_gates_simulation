@@ -144,7 +144,6 @@ export default class Simulation {
   }
   cycle() {
     for (const gate of this.gates) gate.computeOutput();
-    console.log("recomputed", this.gates[0].fetchAllOutput(), this.fetchOutputs())
     Connector.reDraw();
   }
   updateInput(index: number, value: boolean) {

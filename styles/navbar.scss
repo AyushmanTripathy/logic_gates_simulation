@@ -8,15 +8,25 @@ $navbarHeight: 50px;
   @include sans;
   @include fixed(0, 0);
   @include flex(row);
+  @include flex-center;
   @include dimensions($navbarHeight, calc(100vw - 100px));
 
   z-index: 100;
 
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-evenly;
   padding-left: 50px;
   padding-right: 50px;
-  background: $navbarColor;
+
+  section {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    background: $navbarColor;
+  }
 
   a {
     color: black;

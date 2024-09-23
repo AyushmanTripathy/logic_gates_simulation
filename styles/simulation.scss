@@ -12,9 +12,8 @@ body {
   top: 0;
   left: 0;
 
-  height: calc(100vh - $navbarHeight);
+  height: 100vh;
   width: 100vw;
-  padding-top: $navbarHeight;
 
   z-index: 10;
   @include flex(column);
@@ -43,7 +42,7 @@ body {
   position: absolute;
   background: transparent;
   color: white;
-  height: 100%;
+  height: 100vh;
   width: 100vw;
 }
 .box {

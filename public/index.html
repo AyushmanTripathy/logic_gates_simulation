@@ -10,10 +10,53 @@
     />
   </head>
   <body>
-    <dialog></dialog>
+    <dialog id="infoDialog">
+      <button class="closeBtn">
+        <span class="material-symbols-outlined"> close </span>
+      </button>
+      <h2>About</h2>
+      <p>
+        made by
+        <a href="https://github.com/AyushmanTripathy"> AyushmanTripathy</a>
+      </p>
+      <p>
+        to know controls, click
+        <span class="material-symbols-outlined"> help </span>
+      </p>
+    </dialog>
+    <dialog id="helpDialog">
+      <button class="closeBtn">
+        <span class="material-symbols-outlined"> close </span>
+      </button>
+      <h2>Controls</h2>
+      <p>you only need to use your mouse</p>
+      <strong> Right Click </strong>
+      <p>
+        to insert new gate <br />
+        on gates to remove then <br />
+        on dots to remove connections <br />
+      </p>
+      <strong> Left Click </strong>
+      <p>
+        to connect dots <br />
+        hold to drag around gates <br />
+      </p>
+      <p>
+        for more info, click
+        <span class="material-symbols-outlined"> info </span>
+      </p>
+    </dialog>
     <main id="navbar">
-      <h2><a href="/"> Logicx </a></h2>
-      <a href="https://github.com/AyushmanTripathy">@AyushmanTripathy</a>
+      <section>
+        <h2><a href="/"> Logicx </a></h2>
+        <a href="https://github.com/AyushmanTripathy">@AyushmanTripathy</a>
+        <button id="infoDialogOpenBtn">
+          <span class="material-symbols-outlined"> info </span>
+        </button>
+        <button id="helpDialogOpenBtn">
+          <span class="material-symbols-outlined"> help </span>
+        </button>
+      </section>
     </main>
     <main id="simulationMain">
       <section id="simulationContainer">
