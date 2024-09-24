@@ -6,8 +6,6 @@ const cssRoot = select<HTMLElement>(":root");
 
 init();
 async function init() {
-  document.title = config.appName;
-
   select("#navbar").addEventListener("contextmenu", (e) => {
     e.preventDefault();
   });
