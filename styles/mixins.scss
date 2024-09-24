@@ -1,11 +1,12 @@
-$pri: #202020;
-$sec: #303030;
-$tri: #404040;
-$hl: #047dffcb;
-$light: #bbb;
-
 @mixin shadow {
   box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.3);
+}
+@mixin glass {
+  /* From https://css.glass */
+  background: rgba(56, 75, 112, 0.51);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(5.1px);
+  -webkit-backdrop-filter: blur(5.1px);
 }
 @mixin cover($src) {
   background-image: url($src);

@@ -15,6 +15,7 @@ class PopupMenu {
     PopupMenu.instance = this;
 
     this.ele = document.createElement("div");
+    this.ele.addEventListener("contextmenu", (e) => e.preventDefault());
     this.ele.classList.add("popup");
     for (const opt of options) {
       const p = document.createElement("p");
@@ -95,6 +96,9 @@ export default class Simulation {
       []
     );
 
+    mainEle.addEventListener("click", () => {
+      if (PopupMenu.instance) PopupMenu.instance.remove();
+    });
     mainEle.addEventListener("contextmenu", (e) => {
       // ignore bubbled events
       if (e.target != mainEle) return;

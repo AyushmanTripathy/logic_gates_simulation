@@ -1,15 +1,15 @@
 @import "./global.scss";
+@import "./palette.scss";
 
-$navbarColor: blue;
 /* don't forget to update JS */
-$navbarHeight: 50px;
 
 #navbar {
   @include sans;
-  @include fixed(0, 0);
+  @include fixed(3vh, 0);
   @include flex(row);
   @include flex-center;
-  @include dimensions($navbarHeight, calc(100vw - 100px));
+  @include dimensions(fit-content, calc(100vw - 100px));
+  color: $light;
 
   z-index: 100;
 
@@ -19,13 +19,19 @@ $navbarHeight: 50px;
   padding-right: 50px;
 
   section {
+    @include glass;
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    gap: 10px;
-    padding-left: 10px;
-    padding-right: 10px;
-    background: $navbarColor;
+    gap: 40px;
+    padding-left: 20px;
+    padding-right: 20px;
+    border-radius: 10px;
+
+    button {
+      padding: 10px;
+      color: $light;
+    }
   }
 
   a {

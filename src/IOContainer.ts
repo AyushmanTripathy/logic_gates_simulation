@@ -29,7 +29,9 @@ export class InputIOContainer {
 
     ele.style.height = dimensions.input.height + "px";
     ele.style.width = dimensions.input.width + "px";
-    bindWith(ele, select(".inputGate"), true);
+    const inputBoxEle = select(".inputGate");
+    inputBoxEle.classList.add("IOBox");
+    bindWith(ele, inputBoxEle, true);
 
     for (let i = 0; i < inputIOValues.length; i++) {
       const d = createIODot();
@@ -54,7 +56,10 @@ export class OutputIOContainer {
   dots: HTMLElement[] = [];
   outCount: number;
   constructor(ele: HTMLElement, count: number) {
-    bindWith(ele, select(".outputGate"), false);
+    const outputBoxEle = select(".outputGate");
+    outputBoxEle.classList.add("IOBox");
+    bindWith(ele, outputBoxEle, false);
+
     ele.style.height = dimensions.output.height + "px";
     ele.style.width = dimensions.output.width + "px";
     this.outCount = count;

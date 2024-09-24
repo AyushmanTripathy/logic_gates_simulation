@@ -1,5 +1,14 @@
 @import "./mixins.scss";
 
+* {
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Old versions of Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none;
+}
+
 html {
   overflow: scroll;
   overflow-x: hidden;
@@ -27,21 +36,32 @@ body {
   margin: 0;
 }
 
+a {
+  text-decoration: none;
+  color: $light;
+  font-weight: 1000;
+}
+
 dialog {
   @include sans;
+  @include glass;
   @include shadow;
 
+  color: $light;
+  max-width: 500px;
   outline: none;
   padding: none;
   border: none;
+  border-radius: 10px;
 
   top: 50vh;
   bottom: 50vh;
   z-index: 100;
 
   button {
-    position: relative;
-    right: -80%;
+    color: $light;
+    position: absolute;
+    right: 10px;
   }
 }
 
