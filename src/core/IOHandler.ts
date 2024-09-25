@@ -23,6 +23,7 @@ export abstract class InputHandler {
   ele: HTMLElement;
   constructor(ele: HTMLElement) {
     this.ele = ele;
+    ele.addEventListener("contextmenu", (e) => e.preventDefault());
   }
   bind(boxEle: HTMLElement) {
     bindWith(this.ele, boxEle, true);
@@ -74,6 +75,7 @@ export abstract class OutputHandler {
   ele: HTMLElement;
   constructor(ele: HTMLElement) {
     this.ele = ele;
+    ele.addEventListener("contextmenu", (e) => e.preventDefault());
   }
   abstract handleUpdate(values: boolean[]): void;
   bind(boxEle: HTMLElement) {

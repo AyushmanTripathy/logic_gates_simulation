@@ -1,38 +1,10 @@
-import { Box, Connector, InputBox, OutputBox } from "./Basic";
+import { Box } from "./Basic";
+import { InputBox, OutputBox } from "./IOBox";
 import { Gate, availableGates, LogicGateFunction } from "./Gates";
 import { dimensions } from "../config";
 import { OutputHandler } from "./IOHandler";
-
-class PopupMenu {
-  static instance: PopupMenu | null = null;
-  ele: HTMLElement;
-  constructor(x: number, y: number, options: string[], callback: Function) {
-    if (PopupMenu.instance) PopupMenu.instance.remove();
-    PopupMenu.instance = this;
-
-    this.ele = document.createElement("div");
-    this.ele.addEventListener("contextmenu", (e) => e.preventDefault());
-    this.ele.classList.add("popup");
-    for (const opt of options) {
-      const p = document.createElement("p");
-      p.innerText = opt;
-      p.onclick = () => {
-        this.remove();
-        callback(opt);
-      };
-      this.ele.appendChild(p);
-      this.ele.style.top = y + "px";
-      this.ele.style.left = x + "px";
-    }
-  }
-  remove() {
-    PopupMenu.instance = null;
-    this.ele.remove();
-  }
-  render(parentEle: HTMLElement) {
-    parentEle.appendChild(this.ele);
-  }
-}
+import PopupMenu from "../PopupMenu";
+import { Connector } from "./Connection";
 
 export default class Simulation {
   mainEle: HTMLElement;
