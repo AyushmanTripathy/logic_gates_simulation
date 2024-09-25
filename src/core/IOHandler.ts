@@ -42,12 +42,11 @@ export class SimpleInputHandler extends InputHandler {
   callback: Function;
 
   constructor(inputIOValues: boolean[], callback: InputHandlerCallback) {
-    const ele = document.createElement("div");
-    super(ele);
+    super(document.createElement("div"));
     this.inputIOValues = inputIOValues;
     this.callback = callback;
 
-    this.ele.classList.add("IOContainer");
+    this.ele.classList.add("IOHandler");
 
     this.ele.style.height = dimensions.input.height + "px";
     this.ele.style.width = dimensions.input.width + "px";
@@ -94,12 +93,11 @@ export class SimpleOutputHandler extends OutputHandler {
   inCount: number;
 
   constructor(inCount: number) {
-    const ele = document.createElement("div");
-    super(ele);
+    super(document.createElement("div"));
     this.inCount = inCount;
-    ele.classList.add("IOContainer");
-    ele.style.height = dimensions.input.height + "px";
-    ele.style.width = dimensions.input.width + "px";
+    this.ele.classList.add("IOHandler");
+    this.ele.style.height = dimensions.output.height + "px";
+    this.ele.style.width = dimensions.output.width + "px";
 
     for (let i = 0; i < inCount; i++) {
       const d = createIODot();
@@ -110,9 +108,34 @@ export class SimpleOutputHandler extends OutputHandler {
   }
 
   handleUpdate(values: boolean[]): void {
+    if (values.length !== this.inCount)
+      throw "Invalid values length";
     for (let i = 0; i < this.inCount; i++)
       this.dots[i].style.backgroundColor = values[i]
         ? colors.dotConnectedHigh
         : colors.dotConnectedLow;
+  }
+}
+
+export class DisplayOutputHandler extends OutputHandler {
+  textEle: HTMLElement;
+  inCount: number;
+  constructor(inCount: number) {
+    super(document.createElement("div"));
+    this.inCount = inCount;
+    this.ele.style.height = dimensions.output.height + "px";
+    this.ele.classList.add("IOHandler");
+    this.ele.classList.add("IODisplay");
+    this.textEle = document.createElement("h1");
+    this.textEle.innerHTML = "0";
+    this.ele.appendChild(this.textEle);
+  }
+  handleUpdate(values: boolean[]): void {
+    if (values.length != this.inCount)
+      throw "Invalid values length";
+    let decimal = 0;
+    for (let i = 0, x = 1; i < values.length; i++, x *= 2)
+      if (values[i]) decimal += x;
+    this.textEle.innerHTML = String(decimal);
   }
 }

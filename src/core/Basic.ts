@@ -161,7 +161,7 @@ export class Box {
     this.setY(y);
   }
 
-  getEle(): HTMLElement {
+  get element(): HTMLElement {
     return this.ele;
   }
 

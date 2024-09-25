@@ -26,19 +26,11 @@ export default class Simulation {
       this.updateDimensions();
     }).observe(mainEle);
 
-    this.addInput(
-      4,
-      50,
-      this.height / 2 - dimensions.input.height / 2,
-      dimensions.input.height,
-      dimensions.input.width
-    );
+    this.addInput(4, 50, this.height / 2 - dimensions.input.height / 2);
     this.addOutput(
       4,
       this.width - 100,
-      this.height / 2 - dimensions.output.height / 2,
-      dimensions.output.height,
-      dimensions.output.width
+      this.height / 2 - dimensions.output.height / 2
     );
     mainEle.addEventListener("click", () => {
       if (PopupMenu.instance) PopupMenu.instance.remove();
@@ -53,22 +45,8 @@ export default class Simulation {
       const x = e.offsetX,
         y = e.offsetY;
       new PopupMenu(x, y, gatesList, (key: string) => {
-        if (key == "INPUT")
-          return this.addInput(
-            4,
-            x,
-            y,
-            dimensions.input.height,
-            dimensions.input.width
-          );
-        if (key == "OUTPUT")
-          return this.addOutput(
-            4,
-            x,
-            y,
-            dimensions.output.height,
-            dimensions.output.width
-          );
+        if (key == "INPUT") return this.addInput(4, x, y);
+        if (key == "OUTPUT") return this.addOutput(4, x, y);
 
         this.addGate(key, x, y, 100, 150, availableGates[key].in, [
           availableGates[key].logic,
@@ -81,18 +59,18 @@ export default class Simulation {
     Connector.destroy();
   }
 
-  addInput(outCount: number, x: number, y: number, w: number, h: number) {
+  addInput(outCount: number, x: number, y: number) {
     const [gate, handler] = InputBox.createInputGate(outCount);
     this.gates.push(gate);
-    const b = new InputBox(handler, x, y, h, w, this.height, this.width, gate);
+    const b = new InputBox(handler, x, y, this.height, this.width, gate);
     this.boxes.push(b);
     b.render(this.mainEle);
   }
 
-  addOutput(inCount: number, x: number, y: number, w: number, h: number) {
+  addOutput(inCount: number, x: number, y: number) {
     const [gate, handler] = OutputBox.createOutputGate(inCount);
     this.gates.push(gate);
-    const b = new OutputBox(handler, x, y, h, w, this.height, this.width, gate);
+    const b = new OutputBox(handler, x, y, this.height, this.width, gate);
     this.boxes.push(b);
     b.render(this.mainEle);
     this.outputs.push([gate, handler]);

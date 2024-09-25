@@ -1,6 +1,8 @@
+import { dimensions } from "../config";
 import { Box } from "./Basic";
 import { Gate } from "./Gates";
 import {
+    DisplayOutputHandler,
   InputHandler,
   OutputHandler,
   SimpleInputHandler,
@@ -13,14 +15,12 @@ export class InputBox extends Box {
     inputHandler: InputHandler,
     x: number,
     y: number,
-    w: number,
-    h: number,
     sh: number,
     sw: number,
     gate: Gate
   ) {
-    super(x, y, w, h, sh, sw, gate);
-    super.getEle().classList.add("IOBox");
+    super(x, y, dimensions.input.width, dimensions.input.height, sh, sw, gate);
+    super.element.classList.add("IOBox");
     this.handler = inputHandler;
   }
 
@@ -49,7 +49,7 @@ export class InputBox extends Box {
   render(parentEle: HTMLElement) {
     super.render(parentEle);
     this.handler.render(parentEle);
-    this.handler.bind(super.getEle());
+    this.handler.bind(super.element);
   }
 }
 
@@ -59,20 +59,26 @@ export class OutputBox extends Box {
     handler: OutputHandler,
     x: number,
     y: number,
-    w: number,
-    h: number,
     sh: number,
     sw: number,
     gate: Gate
   ) {
-    super(x, y, w, h, sh, sw, gate);
-    super.getEle().classList.add("IOBox");
+    super(
+      x,
+      y,
+      dimensions.output.width,
+      dimensions.output.height,
+      sh,
+      sw,
+      gate
+    );
+    super.element.classList.add("IOBox");
     this.handler = handler;
   }
 
   static createOutputGate(inCount: number): [Gate, OutputHandler] {
     const gate = new Gate("OUTPUT", inCount, []);
-    const handler = new SimpleOutputHandler(inCount);
+    const handler = new DisplayOutputHandler(inCount);
     return [gate, handler];
   }
 
@@ -84,6 +90,6 @@ export class OutputBox extends Box {
   render(parentEle: HTMLElement) {
     super.render(parentEle);
     this.handler.render(parentEle);
-    this.handler.bind(super.getEle());
+    this.handler.bind(super.element);
   }
 }

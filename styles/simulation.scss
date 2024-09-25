@@ -91,7 +91,7 @@ body {
   justify-content: space-evenly;
 }
 
-.IOContainer {
+.IOHandler {
   @include dotContainer;
   position: absolute;
   top: 0;
@@ -102,4 +102,13 @@ body {
 .dotContainer {
   @include dotContainer;
   height: 100%;
+}
+
+.IODisplay {
+  @include flex(column);
+  @include flex-center;
+  width: 100px;
+  h1 {
+    font-size: xxx-large;
+  }
 }
