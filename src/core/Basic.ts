@@ -1,5 +1,9 @@
 import { Gate } from "./Gates";
 import { colors } from "../config";
+import {
+  InputHandler,
+  SimpleInputHandler,
+} from "../IOContainer";
 
 interface Point {
   x: number;
@@ -291,6 +295,10 @@ export class Box {
     this.setY(y);
   }
 
+  getEle(): HTMLElement {
+    return this.ele;
+  }
+
   destroy() {
     for (const d of this.dots) {
       d.removeAllConnections();
@@ -352,5 +360,49 @@ export class Box {
       box.dragStartScreenY = null;
       Connector.reDraw();
     };
+  }
+}
+
+export class InputBox extends Box {
+  handler: InputHandler;
+  constructor(
+    inputHandler: InputHandler,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    sh: number,
+    sw: number,
+    gate: Gate
+  ) {
+    super(x, y, w, h, sh, sw, gate);
+    this.handler = inputHandler;
+  }
+
+  static createInputGate(outCount: number): [Gate, InputHandler] {
+    const inputValues = new Array(outCount).fill(false);
+    const fixedBuffer = (a: boolean[], i: number) => {
+      return () => a[i];
+    };
+    let inputBufferFuncs = [];
+    for (let i = 0; i < outCount; i++) {
+      inputBufferFuncs.push(fixedBuffer(inputValues, i));
+    }
+    const gate = new Gate("INPUT", 0, inputBufferFuncs);
+    const handler = new SimpleInputHandler(
+      inputValues,
+      (i: number, v: boolean) => (inputValues[i] = v)
+    );
+    return [gate, handler];
+  }
+
+  destroy() {
+    super.destroy();
+  }
+
+  render(parentEle: HTMLElement) {
+    super.render(parentEle)
+    this.handler.render(parentEle);
+    this.handler.bind(super.getEle())
   }
 }

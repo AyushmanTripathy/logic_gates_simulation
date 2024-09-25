@@ -9,9 +9,9 @@ function createIODot(): HTMLElement {
 
 function matchPos(a: HTMLElement, b: HTMLElement, isInput: boolean) {
   a.style.top = b.style.top;
-  const bleft = Number(b.style.left.replace("px", ""));
-  if (isInput) a.style.left = bleft - a.clientWidth + "px";
-  else a.style.left = bleft + b.clientWidth + "px";
+  const brect = b.getBoundingClientRect();
+  if (isInput) a.style.left = (brect.x - a.getBoundingClientRect().width) + "px";
+  else a.style.left = (brect.x + brect.width) + "px";
 }
 
 function bindWith(a: HTMLElement, b: HTMLElement, isInput: boolean) {
@@ -19,27 +19,43 @@ function bindWith(a: HTMLElement, b: HTMLElement, isInput: boolean) {
   b.addEventListener("dragend", () => matchPos(a, b, isInput));
 }
 
-export class InputIOContainer {
+type InputHandlerCallback = (i: number, v: boolean) => void;
+export interface InputHandler {
+  bind(boxEle: HTMLElement): void;
+  render(parentEle: HTMLElement): void;
+}
+
+export class SimpleInputHandler implements InputHandler {
   dots: HTMLElement[] = [];
+  ele: HTMLElement;
   inputIOValues: boolean[];
   callback: Function;
-  constructor(ele: HTMLElement, inputIOValues: boolean[], callback: Function) {
+
+  constructor(inputIOValues: boolean[], callback: InputHandlerCallback) {
     this.inputIOValues = inputIOValues;
     this.callback = callback;
 
-    ele.style.height = dimensions.input.height + "px";
-    ele.style.width = dimensions.input.width + "px";
-    const inputBoxEle = select(".inputGate");
-    inputBoxEle.classList.add("IOBox");
-    bindWith(ele, inputBoxEle, true);
+    this.ele = document.createElement("div");
+    this.ele.classList.add("IOContainer");
+
+    this.ele.style.height = dimensions.input.height + "px";
+    this.ele.style.width = dimensions.input.width + "px";
 
     for (let i = 0; i < inputIOValues.length; i++) {
       const d = createIODot();
       this.dots.push(d);
       d.style.backgroundColor = colors.dotConnectedLow;
       d.onclick = () => this.updateInput(i, !this.inputIOValues[i]);
-      ele.appendChild(d);
+      this.ele.appendChild(d);
     }
+  }
+
+  bind(boxEle: HTMLElement) {
+    bindWith(this.ele, boxEle, true);
+  }
+
+  render(parentEle: HTMLElement) {
+    parentEle.appendChild(this.ele);
   }
 
   updateInput(index: number, val: boolean) {

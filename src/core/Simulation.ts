@@ -1,11 +1,6 @@
-import { Box, Connector } from "./Basic";
-import { Gate, LogicGateFunction } from "./Gates";
+import { Box, Connector, InputBox } from "./Basic";
+import { Gate, availableGates, LogicGateFunction } from "./Gates";
 import { dimensions } from "../config";
-import { logicGateFunctions } from "../logicGatesFunction.mjs";
-
-const fixedBuffer = (a: boolean[], i: number) => {
-  return () => a[i];
-};
 
 class PopupMenu {
   static instance: PopupMenu | null = null;
@@ -44,19 +39,10 @@ export default class Simulation {
   height: number;
   width: number;
 
-  inputValues: boolean[];
-  inputCount: number;
-  outputCount: number;
-  outputBufferGate: Gate;
   gates: Gate[];
   boxes: Box[];
 
-  constructor(
-    inputValuesArr: boolean[],
-    outputCount: number,
-    mainEle: HTMLElement,
-    canvasEle: HTMLCanvasElement
-  ) {
+  constructor(mainEle: HTMLElement, canvasEle: HTMLCanvasElement) {
     this.mainEle = mainEle;
     this.canvasEle = canvasEle;
     this.boxes = [];
@@ -68,37 +54,36 @@ export default class Simulation {
       this.updateDimensions();
     }).observe(mainEle);
 
-    this.inputValues = [...inputValuesArr];
-    this.inputCount = inputValuesArr.length;
-    this.outputCount = outputCount;
-
-    let inputBufferFuncs = [];
-    for (let i = 0; i < this.inputCount; i++) {
-      inputBufferFuncs.push(fixedBuffer(this.inputValues, i));
-    }
-
-    this.addGate(
-      "inputGate",
+    this.addInput(
+      4,
       50,
       this.height / 2 - dimensions.input.height / 2,
       dimensions.input.height,
-      dimensions.input.width,
-      0,
-      inputBufferFuncs
+      dimensions.input.width
     );
-    this.outputBufferGate = this.addGate(
+    this.addGate(
       "outputGate",
       this.width - 100,
       this.height / 2 - dimensions.output.height / 2,
       dimensions.output.height,
       dimensions.output.width,
-      outputCount,
+      3,
       []
     );
-
+    /*
+    this.addOutput(
+      4,
+      this.width - 100,
+      this.height / 2 - dimensions.output.height / 2,
+      dimensions.output.height,
+      dimensions.output.width
+    );
+    */
     mainEle.addEventListener("click", () => {
       if (PopupMenu.instance) PopupMenu.instance.remove();
     });
+
+    const gatesList = ["INPUT", ...Object.keys(availableGates)];
     mainEle.addEventListener("contextmenu", (e) => {
       // ignore bubbled events
       if (e.target != mainEle) return;
@@ -106,9 +91,17 @@ export default class Simulation {
 
       const x = e.offsetX,
         y = e.offsetY;
-      new PopupMenu(x, y, Object.keys(logicGateFunctions), (key: string) => {
-        this.addGate(key, x, y, 100, 150, logicGateFunctions[key].in, [
-          logicGateFunctions[key].logic,
+      new PopupMenu(x, y, gatesList, (key: string) => {
+        if (key == "INPUT")
+          return this.addInput(
+            4,
+            x,
+            y,
+            dimensions.input.height,
+            dimensions.input.width
+          );
+        this.addGate(key, x, y, 100, 150, availableGates[key].in, [
+          availableGates[key].logic,
         ]);
       }).render(this.mainEle);
     });
@@ -117,6 +110,16 @@ export default class Simulation {
     Connector.destroy();
   }
 
+  addInput(outCount: number, x: number, y: number, w: number, h: number) {
+    const [gate, handler] = InputBox.createInputGate(outCount);
+    this.gates.push(gate);
+    const b = new InputBox(handler, x, y, h, w, this.height, this.width, gate);
+    this.boxes.push(b);
+    console.log(gate, handler, b)
+    b.render(this.mainEle);
+  }
+
+  addOutput(inCount, x: number, y: number, w: number, h: number) {}
   updateDimensions() {
     this.height = this.mainEle.clientHeight;
     this.width = this.mainEle.clientWidth;
@@ -149,14 +152,5 @@ export default class Simulation {
   cycle() {
     for (const gate of this.gates) gate.computeOutput();
     Connector.reDraw();
-  }
-  updateInput(index: number, value: boolean) {
-    if (index < 0 || this.inputCount <= index)
-      throw "cannot update index " + index;
-    if (typeof value != "boolean") throw "cannot update to value " + value;
-    this.inputValues[index] = value;
-  }
-  fetchOutputs(): boolean[] {
-    return this.outputBufferGate.fetchAllInputs();
   }
 }
