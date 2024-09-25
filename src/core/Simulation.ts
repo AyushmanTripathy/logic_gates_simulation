@@ -1,6 +1,7 @@
-import { Box, Connector, InputBox } from "./Basic";
+import { Box, Connector, InputBox, OutputBox } from "./Basic";
 import { Gate, availableGates, LogicGateFunction } from "./Gates";
 import { dimensions } from "../config";
+import { OutputHandler } from "./IOHandler";
 
 class PopupMenu {
   static instance: PopupMenu | null = null;
@@ -39,14 +40,13 @@ export default class Simulation {
   height: number;
   width: number;
 
-  gates: Gate[];
-  boxes: Box[];
+  gates: Gate[] = [];
+  boxes: Box[] = [];
+  outputs: [Gate, OutputHandler][] = [];
 
   constructor(mainEle: HTMLElement, canvasEle: HTMLCanvasElement) {
     this.mainEle = mainEle;
     this.canvasEle = canvasEle;
-    this.boxes = [];
-    this.gates = [];
 
     new Connector(mainEle, canvasEle);
     this.updateDimensions();
@@ -61,16 +61,6 @@ export default class Simulation {
       dimensions.input.height,
       dimensions.input.width
     );
-    this.addGate(
-      "outputGate",
-      this.width - 100,
-      this.height / 2 - dimensions.output.height / 2,
-      dimensions.output.height,
-      dimensions.output.width,
-      3,
-      []
-    );
-    /*
     this.addOutput(
       4,
       this.width - 100,
@@ -78,12 +68,11 @@ export default class Simulation {
       dimensions.output.height,
       dimensions.output.width
     );
-    */
     mainEle.addEventListener("click", () => {
       if (PopupMenu.instance) PopupMenu.instance.remove();
     });
 
-    const gatesList = ["INPUT", ...Object.keys(availableGates)];
+    const gatesList = ["INPUT", "OUTPUT", ...Object.keys(availableGates)];
     mainEle.addEventListener("contextmenu", (e) => {
       // ignore bubbled events
       if (e.target != mainEle) return;
@@ -100,12 +89,22 @@ export default class Simulation {
             dimensions.input.height,
             dimensions.input.width
           );
+        if (key == "OUTPUT")
+          return this.addOutput(
+            4,
+            x,
+            y,
+            dimensions.output.height,
+            dimensions.output.width
+          );
+
         this.addGate(key, x, y, 100, 150, availableGates[key].in, [
           availableGates[key].logic,
         ]);
       }).render(this.mainEle);
     });
   }
+
   destroy() {
     Connector.destroy();
   }
@@ -115,11 +114,18 @@ export default class Simulation {
     this.gates.push(gate);
     const b = new InputBox(handler, x, y, h, w, this.height, this.width, gate);
     this.boxes.push(b);
-    console.log(gate, handler, b)
     b.render(this.mainEle);
   }
 
-  addOutput(inCount, x: number, y: number, w: number, h: number) {}
+  addOutput(inCount: number, x: number, y: number, w: number, h: number) {
+    const [gate, handler] = OutputBox.createOutputGate(inCount);
+    this.gates.push(gate);
+    const b = new OutputBox(handler, x, y, h, w, this.height, this.width, gate);
+    this.boxes.push(b);
+    b.render(this.mainEle);
+    this.outputs.push([gate, handler]);
+  }
+
   updateDimensions() {
     this.height = this.mainEle.clientHeight;
     this.width = this.mainEle.clientWidth;
@@ -149,8 +155,11 @@ export default class Simulation {
     b.render(this.mainEle);
     return gate;
   }
+
   cycle() {
     for (const gate of this.gates) gate.computeOutput();
+    for (const [gate, handler] of this.outputs)
+      handler.handleUpdate(gate.fetchAllInputs());
     Connector.reDraw();
   }
 }

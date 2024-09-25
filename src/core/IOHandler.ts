@@ -1,5 +1,4 @@
-import { colors, dimensions } from "./config";
-import { select } from "./utils";
+import { colors, dimensions } from "../config";
 
 function createIODot(): HTMLElement {
   const dot = document.createElement("div");
@@ -10,8 +9,8 @@ function createIODot(): HTMLElement {
 function matchPos(a: HTMLElement, b: HTMLElement, isInput: boolean) {
   a.style.top = b.style.top;
   const brect = b.getBoundingClientRect();
-  if (isInput) a.style.left = (brect.x - a.getBoundingClientRect().width) + "px";
-  else a.style.left = (brect.x + brect.width) + "px";
+  if (isInput) a.style.left = brect.x - a.getBoundingClientRect().width + "px";
+  else a.style.left = brect.x + brect.width + "px";
 }
 
 function bindWith(a: HTMLElement, b: HTMLElement, isInput: boolean) {
@@ -20,22 +19,33 @@ function bindWith(a: HTMLElement, b: HTMLElement, isInput: boolean) {
 }
 
 type InputHandlerCallback = (i: number, v: boolean) => void;
-export interface InputHandler {
-  bind(boxEle: HTMLElement): void;
-  render(parentEle: HTMLElement): void;
+export abstract class InputHandler {
+  ele: HTMLElement;
+  constructor(ele: HTMLElement) {
+    this.ele = ele;
+  }
+  bind(boxEle: HTMLElement) {
+    bindWith(this.ele, boxEle, true);
+  }
+  render(parentEle: HTMLElement) {
+    parentEle.appendChild(this.ele);
+  }
+  destroy() {
+    this.ele.remove();
+  }
 }
 
-export class SimpleInputHandler implements InputHandler {
+export class SimpleInputHandler extends InputHandler {
   dots: HTMLElement[] = [];
-  ele: HTMLElement;
   inputIOValues: boolean[];
   callback: Function;
 
   constructor(inputIOValues: boolean[], callback: InputHandlerCallback) {
+    const ele = document.createElement("div");
+    super(ele);
     this.inputIOValues = inputIOValues;
     this.callback = callback;
 
-    this.ele = document.createElement("div");
     this.ele.classList.add("IOContainer");
 
     this.ele.style.height = dimensions.input.height + "px";
@@ -50,14 +60,6 @@ export class SimpleInputHandler implements InputHandler {
     }
   }
 
-  bind(boxEle: HTMLElement) {
-    bindWith(this.ele, boxEle, true);
-  }
-
-  render(parentEle: HTMLElement) {
-    parentEle.appendChild(this.ele);
-  }
-
   updateInput(index: number, val: boolean) {
     if (index < 0 || index >= this.dots.length) throw "invalid index " + index;
     this.dots[index].style.backgroundColor = val
@@ -68,27 +70,45 @@ export class SimpleInputHandler implements InputHandler {
   }
 }
 
-export class OutputIOContainer {
-  dots: HTMLElement[] = [];
-  outCount: number;
-  constructor(ele: HTMLElement, count: number) {
-    const outputBoxEle = select(".outputGate");
-    outputBoxEle.classList.add("IOBox");
-    bindWith(ele, outputBoxEle, false);
+export abstract class OutputHandler {
+  ele: HTMLElement;
+  constructor(ele: HTMLElement) {
+    this.ele = ele;
+  }
+  abstract handleUpdate(values: boolean[]): void;
+  bind(boxEle: HTMLElement) {
+    bindWith(this.ele, boxEle, false);
+  }
+  render(parentEle: HTMLElement) {
+    parentEle.appendChild(this.ele);
+  }
+  destroy() {
+    this.ele.remove();
+  }
+}
 
-    ele.style.height = dimensions.output.height + "px";
-    ele.style.width = dimensions.output.width + "px";
-    this.outCount = count;
-    for (let i = 0; i < count; i++) {
+export class SimpleOutputHandler extends OutputHandler {
+  dots: HTMLElement[] = [];
+  inCount: number;
+
+  constructor(inCount: number) {
+    const ele = document.createElement("div");
+    super(ele);
+    this.inCount = inCount;
+    ele.classList.add("IOContainer");
+    ele.style.height = dimensions.input.height + "px";
+    ele.style.width = dimensions.input.width + "px";
+
+    for (let i = 0; i < inCount; i++) {
       const d = createIODot();
       d.style.backgroundColor = colors.dotConnectedLow;
       this.dots.push(d);
-      ele.appendChild(d);
+      this.ele.appendChild(d);
     }
   }
 
-  update(values: boolean[]) {
-    for (let i = 0; i < this.outCount; i++)
+  handleUpdate(values: boolean[]): void {
+    for (let i = 0; i < this.inCount; i++)
       this.dots[i].style.backgroundColor = values[i]
         ? colors.dotConnectedHigh
         : colors.dotConnectedLow;

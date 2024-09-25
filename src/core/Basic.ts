@@ -2,8 +2,10 @@ import { Gate } from "./Gates";
 import { colors } from "../config";
 import {
   InputHandler,
+  OutputHandler,
   SimpleInputHandler,
-} from "../IOContainer";
+  SimpleOutputHandler,
+} from "./IOHandler";
 
 interface Point {
   x: number;
@@ -398,11 +400,46 @@ export class InputBox extends Box {
 
   destroy() {
     super.destroy();
+    this.handler.destroy();
   }
 
   render(parentEle: HTMLElement) {
-    super.render(parentEle)
+    super.render(parentEle);
     this.handler.render(parentEle);
-    this.handler.bind(super.getEle())
+    this.handler.bind(super.getEle());
+  }
+}
+
+export class OutputBox extends Box {
+  handler: OutputHandler;
+  constructor(
+    handler: OutputHandler,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    sh: number,
+    sw: number,
+    gate: Gate
+  ) {
+    super(x, y, w, h, sh, sw, gate);
+    this.handler = handler;
+  }
+
+  static createOutputGate(inCount: number): [Gate, OutputHandler] {
+    const gate = new Gate("OUTPUT", inCount, []);
+    const handler = new SimpleOutputHandler(inCount);
+    return [gate, handler];
+  }
+
+  destroy() {
+    super.destroy();
+    this.handler.destroy();
+  }
+
+  render(parentEle: HTMLElement) {
+    super.render(parentEle);
+    this.handler.render(parentEle);
+    this.handler.bind(super.getEle());
   }
 }

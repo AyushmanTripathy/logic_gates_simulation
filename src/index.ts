@@ -1,8 +1,6 @@
 import { config } from "./config";
 import { select } from "./utils";
-import SimulationController from "./SimulationController";
-
-const cssRoot = select<HTMLElement>(":root");
+import Simulation from "./core/Simulation";
 
 init();
 async function init() {
@@ -10,8 +8,10 @@ async function init() {
     e.preventDefault();
   });
 
-  const simController = new SimulationController(3, 2);
-  setInterval(() => simController.cycle(), config.cycleInterval);
+  const ele = select("#gameMain");
+  const canvas = select<HTMLCanvasElement>("#gameCanvas");
+  const sim = new Simulation(ele, canvas);
+  setInterval(() => sim.cycle(), config.cycleInterval);
 
   const showDialogFunctions: { [key: string]: Function } = {};
   for (const dialogId of ["helpDialog", "infoDialog"]) {
