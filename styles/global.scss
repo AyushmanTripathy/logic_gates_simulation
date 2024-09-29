@@ -65,6 +65,19 @@ dialog {
   }
 }
 
+dialog[open] {
+  animation: fadein 1s ease normal;
+}
+
+@keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 dialog::backdrop {
   background-color: black;
   opacity: 0.4;

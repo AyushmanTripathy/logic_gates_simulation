@@ -1,7 +1,9 @@
 @import "./palette.scss";
 @import "./mixins.scss";
-@import "./navbar.scss";
 @import "./global.scss";
+
+@import "./navbar.scss";
+@import "./notification.scss";
 
 body {
   display: flex;
