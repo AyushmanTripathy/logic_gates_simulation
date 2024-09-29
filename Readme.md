@@ -6,3 +6,7 @@ make stupid circuits to your heart's content!!
 Simulation program i made while reading Digital Electronics. inspired by [Sebastian Lague](href="https://www.youtube.com/playlist?list=PLFt_AvWsXl0dPhqVsKt1Ni_46ARyiCGSq) 's playlist.
 
 check it out at [gatessim.netlify.app](https://gatessim.netlify.app/)
+
+#### TODO
+
+- [ ] clocks

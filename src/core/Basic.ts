@@ -62,12 +62,13 @@ export class Dot {
     });
     this.ele.addEventListener("click", (e) => {
       e.preventDefault();
+      const selected = Dot.selectedDot;
+      Dot.selectedDot = null;
 
       // connecting both
-      if (Dot.selectedDot && Dot.selectedDot.hashId != this.hashId) {
-        if (this.isInput) Connector.addConnection(Dot.selectedDot, this);
-        else Connector.addConnection(this, Dot.selectedDot);
-        Dot.selectedDot = null;
+      if (selected && selected.hashId != this.hashId) {
+        if (this.isInput) Connector.addConnection(selected, this);
+        else Connector.addConnection(this, selected);
         return;
       }
 
