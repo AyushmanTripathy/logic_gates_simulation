@@ -24,10 +24,8 @@ export default class PopupMenu {
   remove() {
     PopupMenu.instance = null;
     this.ele.remove();
-    console.log("deleted");
   }
   render(parentEle: HTMLElement) {
-    console.log("added", this.ele)
     parentEle.appendChild(this.ele);
   }
 }

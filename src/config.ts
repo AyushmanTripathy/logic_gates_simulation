@@ -9,7 +9,7 @@ export const colors = {
 };
 
 export const dimensions = {
-  dotHeight: 50,
+  dotHeight: 40,
   input: {
     width: 30,
   },

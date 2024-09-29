@@ -25,7 +25,6 @@ export class InputBox extends Box {
       x,
       y,
       dimensions.input.width,
-      gate.outCount * dimensions.dotHeight,
       sh,
       sw,
       gate
@@ -80,7 +79,6 @@ export class OutputBox extends Box {
       x,
       y,
       dimensions.output.width,
-      gate.inCount * dimensions.dotHeight,
       sh,
       sw,
       gate

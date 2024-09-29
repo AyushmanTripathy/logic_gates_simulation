@@ -41,7 +41,6 @@ export default class Simulation {
       if (PopupMenu.instance) PopupMenu.instance.remove();
     });
 
-    const gatesList = ["INPUT", "OUTPUT", ...Object.keys(availableGates)];
     mainEle.addEventListener("contextmenu", (e) => {
       // ignore bubbled events
       if (e.target != mainEle) return;
@@ -92,13 +91,12 @@ export default class Simulation {
     x: number,
     y: number,
     w: number,
-    h: number,
     inCount: number,
     outLogicFuncs: LogicGateFunction[]
   ): Gate {
     const gate = new Gate(name, inCount, outLogicFuncs);
     this.gates.push(gate);
-    const b = new Box(x, y, w, h, this.height, this.width, gate);
+    const b = new Box(x, y, w, this.height, this.width, gate);
     this.boxes.push(b);
     b.render(this.mainEle);
     return gate;
@@ -120,7 +118,6 @@ export default class Simulation {
               x,
               y,
               info.width,
-              info.height,
               info.in,
               info.logic
             );

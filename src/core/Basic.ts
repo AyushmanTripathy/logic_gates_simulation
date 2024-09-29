@@ -1,5 +1,5 @@
 import { Gate } from "./Gates";
-import { colors } from "../config";
+import { colors, dimensions } from "../config";
 import { randomHash } from "../utils";
 import { Connection, Connections, Connector } from "./Connection";
 
@@ -125,7 +125,6 @@ export class Box {
     x: number,
     y: number,
     w: number,
-    h: number,
     sh: number,
     sw: number,
     gate: Gate
@@ -136,7 +135,6 @@ export class Box {
     this.simulationWidth = sw;
     this.ele = document.createElement("div");
     this.ele.classList.add("box");
-    this.ele.classList.add(gate.name);
 
     this.dots = [];
     if (gate.inCount) {
@@ -155,7 +153,7 @@ export class Box {
         this.dots.push(this.outputContainer.addDot());
     } else this.outputContainer = null;
 
-    this.setHeight(h);
+    this.setHeight(dimensions.dotHeight * Math.max(gate.inCount, gate.outCount));
     this.setWidth(w);
 
     this.setX(x);
