@@ -1,10 +1,11 @@
 import { Box } from "./Basic";
 import { InputBox, OutputBox } from "./IOBox";
-import { Gate, availableGates, LogicGateFunction } from "./Gates";
+import { Gate, LogicGateFunction } from "./Gates";
 import { dimensions } from "../config";
 import { OutputHandler } from "./IOHandler";
 import PopupMenu from "../PopupMenu";
 import { Connector } from "./Connection";
+import availableGates, { InputInfo, OutputInfo } from "./avaliableGates";
 
 export default class Simulation {
   mainEle: HTMLElement;
@@ -26,11 +27,15 @@ export default class Simulation {
       this.updateDimensions();
     }).observe(mainEle);
 
-    this.addInput(4, 50, this.height / 2 - dimensions.input.height / 2);
+    this.addInput(
+      availableGates["Inputs"]["4 BIT INPUT"],
+      dimensions.input.width + 20,
+      this.height / 2
+    );
     this.addOutput(
-      4,
-      this.width - 100,
-      this.height / 2 - dimensions.output.height / 2
+      availableGates["Outputs"]["4 BIT OUTPUT"],
+      this.width - (dimensions.output.width * 2 + 20),
+      this.height / 2
     );
     mainEle.addEventListener("click", () => {
       if (PopupMenu.instance) PopupMenu.instance.remove();
@@ -41,39 +46,12 @@ export default class Simulation {
       // ignore bubbled events
       if (e.target != mainEle) return;
       e.preventDefault();
-
-      const x = e.offsetX,
-        y = e.offsetY;
-      new PopupMenu(x, y, gatesList, (key: string) => {
-        if (key == "INPUT") return this.addInput(4, x, y);
-        if (key == "OUTPUT") return this.addOutput(4, x, y);
-
-        this.addGate(key, x, y, 100, 150, availableGates[key].in, [
-          availableGates[key].logic,
-        ]);
-      }).render(this.mainEle);
+      this.createPopup(e.offsetX, e.offsetY);
     });
   }
 
   destroy() {
     Connector.destroy();
-  }
-
-  addInput(outCount: number, x: number, y: number) {
-    const [gate, handler] = InputBox.createInputGate(outCount);
-    this.gates.push(gate);
-    const b = new InputBox(handler, x, y, this.height, this.width, gate);
-    this.boxes.push(b);
-    b.render(this.mainEle);
-  }
-
-  addOutput(inCount: number, x: number, y: number) {
-    const [gate, handler] = OutputBox.createOutputGate(inCount);
-    this.gates.push(gate);
-    const b = new OutputBox(handler, x, y, this.height, this.width, gate);
-    this.boxes.push(b);
-    b.render(this.mainEle);
-    this.outputs.push([gate, handler]);
   }
 
   updateDimensions() {
@@ -89,6 +67,26 @@ export default class Simulation {
     Connector.reDraw();
   }
 
+  addInput(info: InputInfo, x: number, y: number) {
+    const [gate, handler] = InputBox.createInputGate(info.count, info.handler);
+    this.gates.push(gate);
+    const b = new InputBox(handler, x, y, this.height, this.width, gate);
+    this.boxes.push(b);
+    b.render(this.mainEle);
+  }
+
+  addOutput(info: OutputInfo, x: number, y: number) {
+    const [gate, handler] = OutputBox.createOutputGate(
+      info.count,
+      info.handler
+    );
+    this.gates.push(gate);
+    const b = new OutputBox(handler, x, y, this.height, this.width, gate);
+    this.boxes.push(b);
+    b.render(this.mainEle);
+    this.outputs.push([gate, handler]);
+  }
+
   addGate(
     name: string,
     x: number,
@@ -100,10 +98,35 @@ export default class Simulation {
   ): Gate {
     const gate = new Gate(name, inCount, outLogicFuncs);
     this.gates.push(gate);
-    const b = new Box(x, y, h, w, this.height, this.width, gate);
+    const b = new Box(x, y, w, h, this.height, this.width, gate);
     this.boxes.push(b);
     b.render(this.mainEle);
     return gate;
+  }
+
+  createPopup(x: number, y: number) {
+    new PopupMenu(x, y, Object.keys(availableGates), (category: string) => {
+      new PopupMenu(
+        x,
+        y,
+        Object.keys(availableGates[category]),
+        (name: string) => {
+          const info = availableGates[category][name];
+          if (category == "Inputs") this.addInput(info, x, y);
+          else if (category == "Outputs") this.addOutput(info, x, y);
+          else
+            this.addGate(
+              name,
+              x,
+              y,
+              info.width,
+              info.height,
+              info.in,
+              info.logic
+            );
+        }
+      ).render(this.mainEle);
+    }).render(this.mainEle);
   }
 
   cycle() {

@@ -2,9 +2,11 @@ import { dimensions } from "../config";
 import { Box } from "./Basic";
 import { Gate } from "./Gates";
 import {
-    DisplayOutputHandler,
+  DisplayOutputHandler,
   InputHandler,
+  InputHandlerNew,
   OutputHandler,
+  OutputHandlerNew,
   SimpleInputHandler,
   SimpleOutputHandler,
 } from "./IOHandler";
@@ -19,12 +21,23 @@ export class InputBox extends Box {
     sw: number,
     gate: Gate
   ) {
-    super(x, y, dimensions.input.width, dimensions.input.height, sh, sw, gate);
+    super(
+      x,
+      y,
+      dimensions.input.width,
+      gate.outCount * dimensions.dotHeight,
+      sh,
+      sw,
+      gate
+    );
     super.element.classList.add("IOBox");
     this.handler = inputHandler;
   }
 
-  static createInputGate(outCount: number): [Gate, InputHandler] {
+  static createInputGate(
+    outCount: number,
+    Handler: InputHandlerNew
+  ): [Gate, InputHandler] {
     const inputValues = new Array(outCount).fill(false);
     const fixedBuffer = (a: boolean[], i: number) => {
       return () => a[i];
@@ -34,7 +47,7 @@ export class InputBox extends Box {
       inputBufferFuncs.push(fixedBuffer(inputValues, i));
     }
     const gate = new Gate("INPUT", 0, inputBufferFuncs);
-    const handler = new SimpleInputHandler(
+    const handler = new Handler(
       inputValues,
       (i: number, v: boolean) => (inputValues[i] = v)
     );
@@ -67,7 +80,7 @@ export class OutputBox extends Box {
       x,
       y,
       dimensions.output.width,
-      dimensions.output.height,
+      gate.inCount * dimensions.dotHeight,
       sh,
       sw,
       gate
@@ -76,9 +89,12 @@ export class OutputBox extends Box {
     this.handler = handler;
   }
 
-  static createOutputGate(inCount: number): [Gate, OutputHandler] {
+  static createOutputGate(
+    inCount: number,
+    Handler: OutputHandlerNew
+  ): [Gate, OutputHandler] {
     const gate = new Gate("OUTPUT", inCount, []);
-    const handler = new DisplayOutputHandler(inCount);
+    const handler = new Handler(inCount);
     return [gate, handler];
   }
 

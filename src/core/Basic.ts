@@ -34,7 +34,7 @@ export class Dot {
     this.ele.style.backgroundColor = colors.dotConnectedLow;
     if (this.isInput) {
       if (!this.parentBox.gate.setInput(this.index, d.parentBox.gate, d.index))
-        console.log("Connection rejeted by gate");
+        throw "Connection rejeted by gate " + this.parentBox.gate.name;
     }
     this.connections[conn.hash] = conn;
   }

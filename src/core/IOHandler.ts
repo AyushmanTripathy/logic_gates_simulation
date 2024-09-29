@@ -19,10 +19,15 @@ function bindWith(a: HTMLElement, b: HTMLElement, isInput: boolean) {
 }
 
 type InputHandlerCallback = (i: number, v: boolean) => void;
+export type InputHandlerNew = new (arg1: boolean[], arg2: InputHandlerCallback) => InputHandler;
 export abstract class InputHandler {
   ele: HTMLElement;
-  constructor(ele: HTMLElement) {
+  constructor(ele: HTMLElement, count: number) {
     this.ele = ele;
+    this.ele.classList.add("IOHandler");
+    this.ele.style.height = (count * dimensions.dotHeight) + "px";
+    this.ele.style.width = dimensions.input.width + "px";
+
     ele.addEventListener("contextmenu", (e) => e.preventDefault());
   }
   bind(boxEle: HTMLElement) {
@@ -42,14 +47,9 @@ export class SimpleInputHandler extends InputHandler {
   callback: Function;
 
   constructor(inputIOValues: boolean[], callback: InputHandlerCallback) {
-    super(document.createElement("div"));
+    super(document.createElement("div"), inputIOValues.length);
     this.inputIOValues = inputIOValues;
     this.callback = callback;
-
-    this.ele.classList.add("IOHandler");
-
-    this.ele.style.height = dimensions.input.height + "px";
-    this.ele.style.width = dimensions.input.width + "px";
 
     for (let i = 0; i < inputIOValues.length; i++) {
       const d = createIODot();
@@ -70,10 +70,14 @@ export class SimpleInputHandler extends InputHandler {
   }
 }
 
+export type OutputHandlerNew = new(arg1: number) => OutputHandler;
 export abstract class OutputHandler {
   ele: HTMLElement;
-  constructor(ele: HTMLElement) {
+  constructor(ele: HTMLElement, count: number) {
     this.ele = ele;
+    this.ele.classList.add("IOHandler");
+    this.ele.style.height = (count * dimensions.dotHeight) + "px";
+    this.ele.style.width = dimensions.output.width + "px";
     ele.addEventListener("contextmenu", (e) => e.preventDefault());
   }
   abstract handleUpdate(values: boolean[]): void;
@@ -93,11 +97,8 @@ export class SimpleOutputHandler extends OutputHandler {
   inCount: number;
 
   constructor(inCount: number) {
-    super(document.createElement("div"));
+    super(document.createElement("div"), inCount);
     this.inCount = inCount;
-    this.ele.classList.add("IOHandler");
-    this.ele.style.height = dimensions.output.height + "px";
-    this.ele.style.width = dimensions.output.width + "px";
 
     for (let i = 0; i < inCount; i++) {
       const d = createIODot();
@@ -121,10 +122,9 @@ export class DisplayOutputHandler extends OutputHandler {
   textEle: HTMLElement;
   inCount: number;
   constructor(inCount: number) {
-    super(document.createElement("div"));
+    super(document.createElement("div"), inCount);
     this.inCount = inCount;
-    this.ele.style.height = dimensions.output.height + "px";
-    this.ele.classList.add("IOHandler");
+    this.ele.style.width = (dimensions.output.width * 3) + "px";
     this.ele.classList.add("IODisplay");
     this.textEle = document.createElement("h1");
     this.textEle.innerHTML = "0";

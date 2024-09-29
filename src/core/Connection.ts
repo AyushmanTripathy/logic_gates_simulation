@@ -40,8 +40,8 @@ export class Connector {
     if (!this.hasInstance) throw "no Connector instance";
 
     if (from.hashId == to.hashId) throw "Cannot create same dots";
-    if (from.isInput) throw "from cannot be input dot";
-    if (!to.isInput) throw "to cannot be output dot";
+    if (from.isInput) throw "cannot connect input to input.";
+    if (!to.isInput) throw "cannot connect output to output";
 
     // if is input dot and already connected with other
     if (Object.keys(to.connections).length) to.removeAllConnections();

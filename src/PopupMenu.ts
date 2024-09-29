@@ -11,10 +11,11 @@ export default class PopupMenu {
     for (const opt of options) {
       const p = document.createElement("p");
       p.innerText = opt;
-      p.onclick = () => {
+      p.addEventListener("click", (e) => {
+        e.stopPropagation();
         this.remove();
         callback(opt);
-      };
+      });
       this.ele.appendChild(p);
       this.ele.style.top = y + "px";
       this.ele.style.left = x + "px";
@@ -23,8 +24,10 @@ export default class PopupMenu {
   remove() {
     PopupMenu.instance = null;
     this.ele.remove();
+    console.log("deleted");
   }
   render(parentEle: HTMLElement) {
+    console.log("added", this.ele)
     parentEle.appendChild(this.ele);
   }
 }
