@@ -117,6 +117,7 @@ export default class Simulation {
 
   cycle() {
     for (const gate of this.gates) gate.computeOutput();
+    for (const gate of this.gates) gate.useOutputCaches();
     for (const [gate, handler] of this.outputs)
       handler.handleUpdate(gate.fetchAllInputs());
     Connector.reDraw();

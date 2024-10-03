@@ -8,6 +8,8 @@ export class Gate {
   outCount: number;
   outLogicFuncs: LogicGateFunction[];
   outputCaches: boolean[];
+  outputValues: boolean[];
+
   outputCallbacks: (Object | null)[];
   constructor(
     name: string,
@@ -21,6 +23,7 @@ export class Gate {
     this.outCount = outLogicFuncs.length;
     this.outLogicFuncs = outLogicFuncs;
     this.outputCaches = new Array(this.outCount).fill(false);
+    this.outputValues = new Array(this.outCount).fill(false);
     this.outputCallbacks = [];
     for (let i = 0; i < this.outCount; i++) this.outputCallbacks.push({});
   }
@@ -39,22 +42,24 @@ export class Gate {
   }
 
   fetchOutput(index: number): boolean {
-    return this.outputCaches[index];
+    return this.outputValues[index];
   }
 
   fetchAllOutput(): boolean[] {
-    const outs = [];
-    for (let i = 0; i < this.outCount; i++) outs.push(this.fetchOutput(i));
-    return outs;
+    return [...this.outputValues];
   }
 
   computeOutput() {
     const inputValues = this.fetchAllInputs();
+    for (let i = 0; i < this.outCount; i++)
+      this.outputCaches[i] = this.outLogicFuncs[i](inputValues);
+  }
+
+  useOutputCaches() {
     for (let i = 0; i < this.outCount; i++) {
-      const val = this.outLogicFuncs[i](inputValues);
       for (const hash in this.outputCallbacks[i])
-        this.outputCallbacks[i][hash](val);
-      this.outputCaches[i] = val;
+        this.outputCallbacks[i][hash](this.outputCaches[i]);
+      this.outputValues[i] = this.outputCaches[i];
     }
   }
 

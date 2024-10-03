@@ -7,6 +7,12 @@ import {
   SimpleOutputHandler,
 } from "./IOHandler";
 
+function generateLabels(c: string, n: number): string[] {
+  const arr = [];
+  for (let i = 0; i < n; i++) arr.push(c + i);
+  return arr;
+}
+
 export interface GateInfo {
   in: number;
   out: number;
@@ -39,11 +45,29 @@ const basicGates: { [key: string]: GateInfo } = {
     out: 1,
     logic: [(ins) => ins[0] || ins[1]],
   },
+  NAND: {
+    ...commonBasic,
+    in: 2,
+    out: 1,
+    logic: [(ins) => !(ins[0] && ins[1])],
+  },
+  NOR: {
+    ...commonBasic,
+    in: 2,
+    out: 1,
+    logic: [(ins) => !(ins[0] || ins[0])],
+  },
   XOR: {
     ...commonBasic,
     in: 2,
     out: 1,
     logic: [(ins) => !(ins[0] == ins[1])],
+  },
+  XNOR: {
+    ...commonBasic,
+    in: 2,
+    out: 1,
+    logic: [(ins) => ins[0] == ins[1]],
   },
   BUFFER: {
     ...commonBasic,
@@ -59,9 +83,20 @@ const basicGates: { [key: string]: GateInfo } = {
   },
 };
 
+const binaryToDecimal = (
+  arr: boolean[],
+  start = 0,
+  end = arr.length
+): number => {
+  let decimal = 0;
+  for (let i = start, x = 1; i < end; i++, x *= 2) if (arr[i]) decimal += x;
+  return decimal;
+};
+
 const commonArithmatic = {
   width: 200,
 };
+
 const arithmaticGates: { [key: string]: GateInfo } = {
   "HALF ADDER": {
     ...commonArithmatic,
@@ -115,16 +150,6 @@ const commonCoders = {
   width: 200,
 };
 
-const binaryToDecimal = (
-  arr: boolean[],
-  start = 0,
-  end = arr.length
-): number => {
-  let decimal = 0;
-  for (let i = start, x = 1; i < end; i++, x *= 2) if (arr[i]) decimal += x;
-  return decimal;
-};
-
 function Decoder(n: number): GateInfo {
   const logic: LogicGateFunction[] = [];
   const pn = Math.pow(2, n);
@@ -135,8 +160,8 @@ function Decoder(n: number): GateInfo {
     ...commonCoders,
     in: n + 1,
     labels: {
-      in: new Array(n + 1).fill("b").map((s, i) => (i == n ? "En" : s + i)),
-      out: new Array(pn).fill("s").map((s, i) => s + i),
+      in: [...generateLabels("b", n), "En"],
+      out: generateLabels("s", pn),
     },
     out: pn,
     logic,
@@ -152,8 +177,8 @@ function Encoder(n: number): GateInfo {
   return {
     ...commonCoders,
     labels: {
-      in: new Array(pn).fill("s").map((s, i) => s + i),
-      out: new Array(n + 1).fill("b").map((s, i) => (i == n ? "En" : s + i)),
+      in: generateLabels("s", pn),
+      out: [...generateLabels("b", n), "En"],
     },
     in: pn,
     out: n + 1,

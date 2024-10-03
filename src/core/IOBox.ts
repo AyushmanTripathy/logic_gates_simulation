@@ -8,12 +8,6 @@ import {
   OutputHandlerNew,
 } from "./IOHandler";
 
-function labelNames(c: string, n: number): string[] {
-  const arr = [];
-  for (let i = 0; i < n; i++) arr.push(c + i);
-  return arr;
-}
-
 export class InputBox extends Box {
   handler: InputHandler;
   constructor(
