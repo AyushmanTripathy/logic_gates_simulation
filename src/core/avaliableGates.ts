@@ -195,6 +195,77 @@ const coders: { [key: string]: GateInfo } = {
   "16 - 4 LINE ENCODER": Encoder(4),
 };
 
+const commonComparators = {
+  width: 250,
+};
+
+function MagnitudeComparator(n: number): GateInfo {
+  return {
+    ...commonComparators,
+    in: n * 2,
+    out: 3,
+    labels: {
+      in: [...generateLabels("a", n), ...generateLabels("b", n)],
+      out: ["Lt", "Eq", "Gt"],
+    },
+    logic: [
+      (ins) => binaryToDecimal(ins, 0, n) < binaryToDecimal(ins, n, n * 2),
+      (ins) => binaryToDecimal(ins, 0, n) == binaryToDecimal(ins, n, n * 2),
+      (ins) => binaryToDecimal(ins, 0, n) > binaryToDecimal(ins, n, n * 2),
+    ],
+  };
+}
+
+const comparators: { [key: string]: GateInfo } = {
+  "4 BIT COMPARATOR": MagnitudeComparator(4),
+  "8 BIT COMPARATOR": MagnitudeComparator(8),
+};
+
+const commonMuxers = {
+  width: 200,
+};
+
+function Multiplexer(n: number): GateInfo {
+  const pn = Math.pow(2, n);
+  return {
+    ...commonMuxers,
+    in: pn + n,
+    out: 1,
+    labels: {
+      in: [...generateLabels("y", pn), ...generateLabels("s", n)],
+      out: ["D"],
+    },
+    logic: [(ins) => ins[binaryToDecimal(ins, pn, pn + n)]],
+  };
+}
+
+function Demultiplexer(n: number): GateInfo {
+  const pn = Math.pow(2, n);
+  const logic = [];
+  for (let i = 0; i < pn; i++) {
+    logic.push((ins) => (binaryToDecimal(ins, 1) == i ? ins[0] : false));
+  }
+  return {
+    ...commonMuxers,
+    in: 1 + n,
+    out: pn,
+    labels: {
+      in: ["D", ...generateLabels("s", n)],
+      out: generateLabels("y", pn),
+    },
+    logic,
+  };
+}
+
+const muxers: { [key: string]: GateInfo } = {
+  "1 - 2 LINE MUX": Multiplexer(1),
+  "1 - 2 LINE DEMUX": Demultiplexer(1),
+  "1 - 4 LINE MUX": Multiplexer(2),
+  "1 - 4 LINE DEMUX": Demultiplexer(2),
+  "1 - 8 LINE MUX": Multiplexer(3),
+  "1 - 8 LINE DEMUX": Demultiplexer(3),
+};
+
 export interface InputInfo {
   count: number;
   handler: InputHandlerNew;
@@ -253,4 +324,6 @@ export default {
   "Basic Gates": basicGates,
   "Adders/Subtractors": arithmaticGates,
   "Encoders/Decoders": coders,
+  Comparators: comparators,
+  "MUX/DEMUX": muxers,
 };
