@@ -10,5 +10,4 @@ check it out at [gatessim.netlify.app](https://gatessim.netlify.app/)
 #### TODO
 
 - [ ] clocks
-- [ ] labels for inputs and outputs
 - [ ] connect all inputs at once

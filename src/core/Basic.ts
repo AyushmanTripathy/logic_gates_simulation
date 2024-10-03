@@ -87,20 +87,50 @@ class DotContainer {
   isInput: boolean;
   indexCounter = 0;
   parentBox: Box;
+  dots: Dot[] = [];
   ele: HTMLElement;
 
-  constructor(isInput: boolean, parentBox: Box) {
+  constructor(
+    isInput: boolean,
+    dotCount: number,
+    labels: string[],
+    parentBox: Box
+  ) {
     this.isInput = isInput;
     this.parentBox = parentBox;
     this.ele = document.createElement("div");
     this.ele.classList.add("dotContainer");
     parentBox.ele.appendChild(this.ele);
+
+    const dotsContainer = document.createElement("section");
+    const labelsContainer = document.createElement("section");
+
+    for (let i = 0; i < dotCount; i++) {
+      const d = new Dot(this.indexCounter++, this.isInput, this.parentBox);
+      d.render(dotsContainer);
+      this.dots.push(d);
+    }
+
+    for (const label of labels) {
+      const labelEle = document.createElement("div");
+      labelEle.innerText = label;
+      labelsContainer.appendChild(labelEle);
+    }
+
+    if (labels.length) {
+      if (isInput) {
+        this.ele.appendChild(dotsContainer);
+        this.ele.appendChild(labelsContainer);
+      } else {
+        this.ele.appendChild(labelsContainer);
+        this.ele.appendChild(dotsContainer);
+      }
+    } else this.ele.appendChild(dotsContainer);
   }
 
-  addDot(): Dot {
-    const d = new Dot(this.indexCounter++, this.isInput, this.parentBox);
-    d.render(this.ele);
-    return d;
+  destroy() {
+    for (const d of this.dots) d.removeAllConnections();
+    this.ele.remove();
   }
 }
 export class Box {
@@ -116,7 +146,6 @@ export class Box {
 
   ele: HTMLElement;
   gate: Gate;
-  dots: Dot[];
   inputContainer: DotContainer;
   outputContainer: DotContainer;
   nameEle: HTMLElement;
@@ -124,38 +153,44 @@ export class Box {
   constructor(
     x: number,
     y: number,
+    labels: { in: string[] | null; out: string[] | null },
     w: number,
     sh: number,
     sw: number,
     gate: Gate
   ) {
     this.gate = gate;
-
     this.simulationHeight = sh;
     this.simulationWidth = sw;
     this.ele = document.createElement("div");
     this.ele.classList.add("box");
 
-    this.dots = [];
-    if (gate.inCount) {
-      this.inputContainer = new DotContainer(true, this);
-      for (let i = 0; i < gate.inCount; i++)
-        this.dots.push(this.inputContainer.addDot());
-    } else this.inputContainer = null;
+    if (gate.inCount)
+      this.inputContainer = new DotContainer(
+        true,
+        gate.inCount,
+        labels.in,
+        this
+      );
+    else this.inputContainer = null;
 
     this.nameEle = document.createElement("h1");
     if (gate.inCount && gate.outCount) this.nameEle.innerText = gate.name;
     this.ele.appendChild(this.nameEle);
 
-    if (gate.outCount) {
-      this.outputContainer = new DotContainer(false, this);
-      for (let i = 0; i < gate.outCount; i++)
-        this.dots.push(this.outputContainer.addDot());
-    } else this.outputContainer = null;
+    if (gate.outCount)
+      this.outputContainer = new DotContainer(
+        false,
+        gate.outCount,
+        labels.out,
+        this
+      );
+    else this.outputContainer = null;
 
-    this.setHeight(dimensions.dotHeight * Math.max(gate.inCount, gate.outCount));
+    this.setHeight(
+      dimensions.dotHeight * Math.max(gate.inCount, gate.outCount)
+    );
     this.setWidth(w);
-
     this.setX(x);
     this.setY(y);
   }
@@ -165,9 +200,8 @@ export class Box {
   }
 
   destroy() {
-    for (const d of this.dots) {
-      d.removeAllConnections();
-    }
+    if (this.inputContainer) this.inputContainer.destroy();
+    if (this.outputContainer) this.outputContainer.destroy();
     this.ele.remove();
   }
 

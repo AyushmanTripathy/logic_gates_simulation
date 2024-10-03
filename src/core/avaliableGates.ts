@@ -7,18 +7,26 @@ import {
   SimpleOutputHandler,
 } from "./IOHandler";
 
-interface LogicGateInfo {
+export interface GateInfo {
   in: number;
   out: number;
   width: number;
+  labels: {
+    in: string[];
+    out: string[];
+  };
   logic: LogicGateFunction[];
 }
 
 const commonBasic = {
   width: 150,
+  labels: {
+    in: [],
+    out: [],
+  },
 };
 
-const basicGates: { [key: string]: LogicGateInfo } = {
+const basicGates: { [key: string]: GateInfo } = {
   AND: {
     ...commonBasic,
     in: 2,
@@ -54,15 +62,23 @@ const basicGates: { [key: string]: LogicGateInfo } = {
 const commonArithmatic = {
   width: 200,
 };
-const arithmaticGates: { [key: string]: LogicGateInfo } = {
+const arithmaticGates: { [key: string]: GateInfo } = {
   "HALF ADDER": {
     ...commonArithmatic,
+    labels: {
+      in: ["a", "b"],
+      out: ["s", "c"],
+    },
     in: 2,
     out: 2,
     logic: [(ins) => ins[0] !== ins[1], (ins) => ins[0] && ins[1]],
   },
   "FULL ADDER": {
     ...commonArithmatic,
+    labels: {
+      in: ["a", "b", "c"],
+      out: ["s", "c"],
+    },
     in: 3,
     out: 2,
     logic: [
@@ -72,12 +88,20 @@ const arithmaticGates: { [key: string]: LogicGateInfo } = {
   },
   "HALF SUBTRACTOR": {
     ...commonArithmatic,
+    labels: {
+      in: ["a", "b"],
+      out: ["d", "b"],
+    },
     in: 2,
     out: 2,
     logic: [(ins) => ins[0] !== ins[1], (ins) => !ins[0] && ins[1]],
   },
   "FULL SUBTRACTOR": {
     ...commonArithmatic,
+    labels: {
+      in: ["a", "b", "c"],
+      out: ["d", "b"],
+    },
     in: 3,
     out: 2,
     logic: [
@@ -101,20 +125,25 @@ const binaryToDecimal = (
   return decimal;
 };
 
-function Decoder(n: number): LogicGateInfo {
+function Decoder(n: number): GateInfo {
   const logic: LogicGateFunction[] = [];
-  for (let i = 0; i < Math.pow(2, n); i++) {
+  const pn = Math.pow(2, n);
+  for (let i = 0; i < pn; i++) {
     logic.push((ins) => (ins[n] ? binaryToDecimal(ins, 0, n) === i : false));
   }
   return {
     ...commonCoders,
     in: n + 1,
-    out: Math.pow(2, n),
+    labels: {
+      in: new Array(n + 1).fill("b").map((s, i) => (i == n ? "En" : s + i)),
+      out: new Array(pn).fill("s").map((s, i) => s + i),
+    },
+    out: pn,
     logic,
   };
 }
 
-function Encoder(n: number): LogicGateInfo {
+function Encoder(n: number): GateInfo {
   const logic: LogicGateFunction[] = [];
   const pn = Math.pow(2, n);
   for (let i = 0, x = 1; i < n; i++, x *= 2)
@@ -122,13 +151,17 @@ function Encoder(n: number): LogicGateInfo {
   logic.push((ins) => ins.includes(true));
   return {
     ...commonCoders,
+    labels: {
+      in: new Array(pn).fill("s").map((s, i) => s + i),
+      out: new Array(n + 1).fill("b").map((s, i) => (i == n ? "En" : s + i)),
+    },
     in: pn,
     out: n + 1,
     logic,
   };
 }
 
-const coders: { [key: string]: LogicGateInfo } = {
+const coders: { [key: string]: GateInfo } = {
   "2 - 4 LINE DECODER": Decoder(2),
   "4 - 2 LINE ENCODER": Encoder(2),
   "3 - 8 LINE DECODER": Decoder(3),

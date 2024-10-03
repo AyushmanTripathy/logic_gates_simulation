@@ -93,10 +93,10 @@ body {
 }
 
 @mixin dotContainer {
-  display: flex;
-  flex-direction: column;
+  @include flex(column);
   align-items: center;
   justify-content: space-evenly;
+  color: grey;
 }
 
 .IOHandler {
@@ -108,8 +108,13 @@ body {
 }
 
 .dotContainer {
-  @include dotContainer;
+  @include flex(row);
   height: 100%;
+  width: fit-content;
+  column-gap: 5px;
+  section {
+    @include dotContainer;
+  }
 }
 
 .IODisplay {

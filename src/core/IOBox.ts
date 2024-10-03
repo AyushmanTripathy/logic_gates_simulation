@@ -2,14 +2,17 @@ import { dimensions } from "../config";
 import { Box } from "./Basic";
 import { Gate } from "./Gates";
 import {
-  DisplayOutputHandler,
   InputHandler,
   InputHandlerNew,
   OutputHandler,
   OutputHandlerNew,
-  SimpleInputHandler,
-  SimpleOutputHandler,
 } from "./IOHandler";
+
+function labelNames(c: string, n: number): string[] {
+  const arr = [];
+  for (let i = 0; i < n; i++) arr.push(c + i);
+  return arr;
+}
 
 export class InputBox extends Box {
   handler: InputHandler;
@@ -21,14 +24,11 @@ export class InputBox extends Box {
     sw: number,
     gate: Gate
   ) {
-    super(
-      x,
-      y,
-      dimensions.input.width,
-      sh,
-      sw,
-      gate
-    );
+    const labels = {
+      in: [],
+      out: [],
+    };
+    super(x, y, labels, dimensions.input.width, sh, sw, gate);
     super.element.classList.add("IOBox");
     this.handler = inputHandler;
   }
@@ -75,14 +75,11 @@ export class OutputBox extends Box {
     sw: number,
     gate: Gate
   ) {
-    super(
-      x,
-      y,
-      dimensions.output.width,
-      sh,
-      sw,
-      gate
-    );
+    const labels = {
+      in: [],
+      out: [],
+    };
+    super(x, y, labels, dimensions.output.width, sh, sw, gate);
     super.element.classList.add("IOBox");
     this.handler = handler;
   }

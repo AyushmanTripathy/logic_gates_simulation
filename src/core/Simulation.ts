@@ -1,11 +1,15 @@
 import { Box } from "./Basic";
 import { InputBox, OutputBox } from "./IOBox";
-import { Gate, LogicGateFunction } from "./Gates";
+import { Gate } from "./Gates";
 import { dimensions } from "../config";
 import { OutputHandler } from "./IOHandler";
 import PopupMenu from "../PopupMenu";
 import { Connector } from "./Connection";
-import availableGates, { InputInfo, OutputInfo } from "./avaliableGates";
+import availableGates, {
+  GateInfo,
+  InputInfo,
+  OutputInfo,
+} from "./avaliableGates";
 
 export default class Simulation {
   mainEle: HTMLElement;
@@ -86,17 +90,10 @@ export default class Simulation {
     this.outputs.push([gate, handler]);
   }
 
-  addGate(
-    name: string,
-    x: number,
-    y: number,
-    w: number,
-    inCount: number,
-    outLogicFuncs: LogicGateFunction[]
-  ): Gate {
-    const gate = new Gate(name, inCount, outLogicFuncs);
+  addGate(name: string, info: GateInfo, x: number, y: number): Gate {
+    const gate = new Gate(name, info.in, info.logic);
     this.gates.push(gate);
-    const b = new Box(x, y, w, this.height, this.width, gate);
+    const b = new Box(x, y, info.labels, info.width, this.height, this.width, gate);
     this.boxes.push(b);
     b.render(this.mainEle);
     return gate;
@@ -112,15 +109,7 @@ export default class Simulation {
           const info = availableGates[category][name];
           if (category == "Inputs") this.addInput(info, x, y);
           else if (category == "Outputs") this.addOutput(info, x, y);
-          else
-            this.addGate(
-              name,
-              x,
-              y,
-              info.width,
-              info.in,
-              info.logic
-            );
+          else this.addGate(name, info, x, y);
         }
       ).render(this.mainEle);
     }).render(this.mainEle);
