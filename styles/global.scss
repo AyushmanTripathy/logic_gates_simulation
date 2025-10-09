@@ -63,6 +63,28 @@ dialog {
     position: absolute;
     right: 10px;
   }
+
+  input {
+    @include sans;
+    background: transparent;
+    outline: none;
+    color: white;
+    border: none;
+    border-bottom: 1px solid $light;
+  }
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+
+  button {
+    @include sans;
+    position: static;
+    right: 0;
+    border: 1px solid $light;
+    padding: 10px;
+  }
 }
 
 dialog[open] {

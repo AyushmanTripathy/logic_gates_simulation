@@ -23,7 +23,7 @@ export async function init() {
     setInterval(() => sim.cycle(), config.cycleInterval);
 
     const showDialogFunctions: { [key: string]: Function; } = {};
-    for (const dialogId of ["helpDialog", "infoDialog"]) {
+    for (const dialogId of ["helpDialog", "infoDialog", "exportDialog"]) {
         const dialog = select<HTMLDialogElement>("#" + dialogId);
         dialog
             .querySelector("button")
@@ -33,7 +33,12 @@ export async function init() {
     }
     showDialogFunctions["helpDialog"]();
     showDialogFunctions["infoDialog"]();
+    //showDialogFunctions["exportDialog"]();
 
-    const exportBtn = select<HTMLButtonElement>("#exportBtn")
-    exportBtn.addEventListener("click", () => exportSimulation("Ayush 4#% asd  aA", sim))
+    const exportForm = select<HTMLFormElement>("#exportForm")
+    exportForm.onsubmit = () => {
+      const data = new FormData(exportForm)
+      const exportName = String(data.get("name") || "circuit")
+      exportSimulation(exportName, sim)
+    }
 }

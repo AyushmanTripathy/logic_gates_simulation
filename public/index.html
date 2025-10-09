@@ -77,6 +77,19 @@
         Enjoy !!
       </p>
     </dialog>
+    <dialog id="exportDialog" close>
+      <button class="closeBtn">
+        <span class="material-symbols-outlined"> close </span>
+      </button>
+      <h2>Export Circuit</h2>
+      <p>export your circuit into a json file to share with peers.</p>
+      <form id="exportForm" action="javascript:void(0)">
+        <label for="name"> Export File Name: </label>
+        <input type="text" id="name" name="name">
+        <br>
+        <button type="submit"> Export </button>
+      </form>
+    </dialog>
     <main id="navbar">
       <section>
         <button id="infoDialogOpenBtn">
@@ -85,7 +98,7 @@
         <button id="helpDialogOpenBtn">
           <span class="material-symbols-outlined"> help </span>
         </button>
-        <button id="exportBtn">
+        <button id="exportDialogOpenBtn">
           <span class="material-symbols-outlined"> download </span>
         </button>
       </section>
