@@ -1,5 +1,6 @@
 import { config } from "./config";
 import Simulation from "./core/Simulation";
+import { exportSimulation } from "./export";
 import Notifier from "./Notifier";
 import { select } from "./utils";
 
@@ -32,5 +33,7 @@ export async function init() {
     }
     showDialogFunctions["helpDialog"]();
     showDialogFunctions["infoDialog"]();
-}
 
+    const exportBtn = select<HTMLButtonElement>("#exportBtn")
+    exportBtn.addEventListener("click", () => exportSimulation("Ayush 4#% asd  aA", sim))
+}
